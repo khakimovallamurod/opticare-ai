@@ -1,4 +1,4 @@
-Django==5.1.4
-Pillow==11.1.0
-python-dotenv==1.0.1
-google-genai==1.5.0
+Django
+Pillow
+python-dotenv
+google-genai
