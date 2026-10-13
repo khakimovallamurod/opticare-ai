@@ -38,7 +38,7 @@ class DemoLoginTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
-            username="demo", first_name="Allamurod", last_name="Hakimov"
+            username="demo", first_name="Ibodat", last_name="Musurmonova"
         )
 
     def test_demo_login_success(self):
@@ -215,8 +215,8 @@ class SeedDemoCommandTests(TestCase):
         call_command("seed_demo", verbosity=0)
 
         user = User.objects.get(username="demo")
-        self.assertEqual(user.first_name, "Allamurod")
-        self.assertEqual(user.last_name, "Hakimov")
+        self.assertEqual(user.first_name, "Ibodat")
+        self.assertEqual(user.last_name, "Musurmonova")
 
         scan_count = Scan.objects.filter(user=user).count()
         self.assertGreaterEqual(scan_count, 12)

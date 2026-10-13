@@ -146,11 +146,16 @@ class Command(BaseCommand):
         user, created = User.objects.get_or_create(
             username="demo",
             defaults={
-                "first_name": "Allamurod",
-                "last_name": "Hakimov",
+                "first_name": "Ibodat",
+                "last_name": "Musurmonova",
                 "email": "demo@opticare.uz",
             },
         )
+        if not created and (user.first_name != "Ibodat" or user.last_name != "Musurmonova"):
+            user.first_name = "Ibodat"
+            user.last_name = "Musurmonova"
+            user.save()
+
         if created:
             user.set_unusable_password()
             user.save()
