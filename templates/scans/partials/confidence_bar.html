@@ -1,0 +1,27 @@
+{% comment %}
+Confidence progress bar partial.
+Usage: {% include "scans/partials/confidence_bar.html" with color="emerald" %}
+{% endcomment %}
+{% if scan.confidence %}
+<div x-data="{ currentWidth: '0%' }" x-init="setTimeout(() => currentWidth = '{{ scan.confidence_percent }}%', 100)">
+  <div class="flex justify-between items-center text-sm font-semibold text-slate-600 mb-2">
+    <span>Ishonch darajasi</span>
+    <span class="text-slate-900 font-bold">{{ scan.confidence_percent }}%</span>
+  </div>
+  <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+    {% if color == 'emerald' %}
+    <div class="bg-emerald-600 h-3 rounded-full transition-all duration-1000 ease-out"
+      :style="'width: ' + currentWidth"
+      role="progressbar" aria-valuenow="{{ scan.confidence_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+    {% elif color == 'amber' %}
+    <div class="bg-amber-500 h-3 rounded-full transition-all duration-1000 ease-out"
+      :style="'width: ' + currentWidth"
+      role="progressbar" aria-valuenow="{{ scan.confidence_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+    {% elif color == 'rose' %}
+    <div class="bg-rose-600 h-3 rounded-full transition-all duration-1000 ease-out"
+      :style="'width: ' + currentWidth"
+      role="progressbar" aria-valuenow="{{ scan.confidence_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

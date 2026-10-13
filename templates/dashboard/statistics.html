@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Statistika{% endblock %}
+{% block page_title %}Statistika{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 py-8 space-y-8" data-reveal>
+
+  <div>
+    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Batafsil statistika</h2>
+    <p class="text-slate-600 mt-1 text-base sm:text-lg">O'tkazilgan tekshiruvlarning tahliliy taqsimoti va ko'rsatkichlari</p>
+  </div>
+
+  <!-- Summary stat cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
+      <p class="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight" data-countup="{{ stats.total }}">{{ stats.total }}</p>
+      <p class="text-base font-semibold text-slate-600 mt-2">Jami tekshiruvlar</p>
+    </div>
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
+      <p class="text-4xl lg:text-5xl font-black text-emerald-600 tracking-tight" data-countup="{{ stats.class_counts.normal }}">{{ stats.class_counts.normal }}</p>
+      <p class="text-base font-semibold text-slate-600 mt-2">Yaxshi holat</p>
+    </div>
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
+      <p class="text-4xl lg:text-5xl font-black text-amber-500 tracking-tight" data-countup="{{ stats.class_counts.attention }}">{{ stats.class_counts.attention }}</p>
+      <p class="text-base font-semibold text-slate-600 mt-2">Kuzatuv</p>
+    </div>
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
+      <p class="text-4xl lg:text-5xl font-black text-rose-600 tracking-tight" data-countup="{{ stats.class_counts.consult }}">{{ stats.class_counts.consult }}</p>
+      <p class="text-base font-semibold text-slate-600 mt-2">Murojaat tavsiya</p>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Doughnut -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between">
+      <h3 class="text-xl font-bold text-slate-900 mb-4">Natijalar taqsimoti</h3>
+      {% if stats.total > 0 %}
+      <div class="flex justify-center mb-6">
+        <div class="w-60 h-60">
+          <canvas id="classChart" aria-label="Natijalar taqsimoti diagrammasi" role="img"></canvas>
+        </div>
+      </div>
+      <!-- Class breakdown percentages -->
+      <div class="space-y-4 mt-2">
+        <div>
+          <div class="flex justify-between text-base mb-1.5 font-medium">
+            <span class="text-emerald-700">Yaxshi holat</span>
+            <span class="text-slate-900 font-bold">{{ normal_pct }}%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-3">
+            <div class="bg-emerald-600 h-3 rounded-full transition-all duration-1000" style="width: {{ normal_pct }}%" role="progressbar"
+              aria-valuenow="{{ normal_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-base mb-1.5 font-medium">
+            <span class="text-amber-700">Kuzatuv talab etadi</span>
+            <span class="text-slate-900 font-bold">{{ attention_pct }}%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-3">
+            <div class="bg-amber-500 h-3 rounded-full transition-all duration-1000" style="width: {{ attention_pct }}%" role="progressbar"
+              aria-valuenow="{{ attention_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-base mb-1.5 font-medium">
+            <span class="text-rose-700">Shifokorga murojaat</span>
+            <span class="text-slate-900 font-bold">{{ consult_pct }}%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-3">
+            <div class="bg-rose-600 h-3 rounded-full transition-all duration-1000" style="width: {{ consult_pct }}%" role="progressbar"
+              aria-valuenow="{{ consult_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-base text-slate-400 text-center py-12">Hali tekshiruvlar yo'q</p>
+      {% endif %}
+    </div>
+
+    <!-- Monthly bar -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between">
+      <div>
+        <h3 class="text-xl font-bold text-slate-900 mb-1">Oylik trend (so'nggi 6 oy)</h3>
+        <p class="text-sm text-slate-500 mb-6">Oylar bo'yicha tahlillar dinamikasi</p>
+      </div>
+      <div class="h-72">
+        <canvas id="monthlyChart" aria-label="Oylik tekshiruvlar diagrammasi" role="img"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional metrics -->
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8">
+    <h3 class="text-xl font-bold text-slate-900 mb-6">Qo'shimcha ko'rsatkichlar</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100">
+        <p class="text-3xl font-extrabold text-slate-900" data-countup="{{ stats.avg_confidence }}">{{ stats.avg_confidence }}%</p>
+        <p class="text-base text-slate-600 mt-2 font-medium">O'rtacha ishonch darajasi</p>
+      </div>
+      <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100">
+        <p class="text-3xl font-extrabold text-slate-900" data-countup="{{ stats.this_month }}">{{ stats.this_month }}</p>
+        <p class="text-base text-slate-600 mt-2 font-medium">Shu oydagi tekshiruvlar</p>
+      </div>
+      <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100">
+        <p class="text-3xl font-extrabold text-slate-900" data-countup="{{ stats.consult_count }}">{{ stats.consult_count }}</p>
+        <p class="text-base text-slate-600 mt-2 font-medium">Murojaat tavsiya etilganlar</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if stats.total > 0 %}
+const classCtx = document.getElementById('classChart');
+if (classCtx) {
+  new Chart(classCtx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ chart_class_labels|safe }},
+      datasets: [{
+        data: {{ chart_class_data|safe }},
+        backgroundColor: ['#059669', '#f59e0b', '#e11d48'],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+        borderWidth: 3,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      animation: {
+        duration: 900,
+        easing: 'easeOutQuart',
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 13, weight: '500' }, padding: 18 } },
+        tooltip: { titleFont: { family: 'Inter', size: 14 }, bodyFont: { family: 'Inter', size: 13 } },
+      },
+      cutout: '65%',
+    },
+  });
+}
+{% endif %}
+
+const monthlyCtx = document.getElementById('monthlyChart');
+if (monthlyCtx) {
+  new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_monthly_labels|safe }},
+      datasets: [{
+        label: "Tekshiruvlar",
+        data: {{ chart_monthly_data|safe }},
+        backgroundColor: '#059669',
+        borderRadius: 8,
+        borderSkipped: false,
+        maxBarThickness: 42,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 900,
+        easing: 'easeOutQuart',
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { titleFont: { family: 'Inter', size: 14 }, bodyFont: { family: 'Inter', size: 13 } },
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter', size: 13 } }, grid: { color: '#f1f5f9' } },
+        x: { ticks: { font: { family: 'Inter', size: 13 } }, grid: { display: false } },
+      },
+    },
+  });
+}
+</script>
+{% endblock %}

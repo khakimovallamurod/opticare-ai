@@ -1,0 +1,21 @@
+{% comment %}Scan class badge partial. Usage: {% include "partials/class_badge.html" with scan=scan %}{% endcomment %}
+{% if scan.result_class == 'normal' %}
+  <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+    Yaxshi holat
+  </span>
+{% elif scan.result_class == 'attention' %}
+  <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+    Kuzatuv talab etadi
+  </span>
+{% elif scan.result_class == 'consult' %}
+  <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold bg-rose-100 text-rose-800">
+    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0"></span>
+    Shifokorga murojaat
+  </span>
+{% else %}
+  <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold bg-slate-100 text-slate-700">
+    Noma'lum
+  </span>
+{% endif %}

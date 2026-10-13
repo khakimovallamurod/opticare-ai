@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Tekshiruv tarixi{% endblock %}
+{% block page_title %}Tekshiruv tarixi{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 py-8 space-y-8" data-reveal>
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Tekshiruv tarixi</h2>
+      <p class="text-slate-600 mt-1 text-base sm:text-lg">Barcha o'tkazilgan tekshiruvlar ro'yxati va tahlil hisobotlari</p>
+    </div>
+    <a href="{% url 'new_scan' %}"
+      class="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-base font-bold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95"
+      id="history-new-scan-btn">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+      </svg>
+      Yangi tekshiruv
+    </a>
+  </div>
+
+  <!-- Class filter chips -->
+  <div class="flex flex-wrap gap-3" role="group" aria-label="Natija bo'yicha filterlash">
+    <a href="{% url 'scan_history' %}"
+      class="px-5 py-2.5 rounded-full text-base font-semibold border transition-colors
+        {% if not class_filter %}bg-slate-900 text-white border-slate-900{% else %}bg-white text-slate-700 border-slate-200 hover:border-slate-400{% endif %}">
+      Barchasi
+    </a>
+    <a href="?class=normal"
+      class="px-5 py-2.5 rounded-full text-base font-semibold border transition-colors
+        {% if class_filter == 'normal' %}bg-emerald-600 text-white border-emerald-600{% else %}bg-white text-slate-700 border-slate-200 hover:border-emerald-500{% endif %}">
+      Yaxshi holat
+    </a>
+    <a href="?class=attention"
+      class="px-5 py-2.5 rounded-full text-base font-semibold border transition-colors
+        {% if class_filter == 'attention' %}bg-amber-500 text-white border-amber-500{% else %}bg-white text-slate-700 border-slate-200 hover:border-amber-400{% endif %}">
+      Kuzatuv
+    </a>
+    <a href="?class=consult"
+      class="px-5 py-2.5 rounded-full text-base font-semibold border transition-colors
+        {% if class_filter == 'consult' %}bg-rose-600 text-white border-rose-600{% else %}bg-white text-slate-700 border-slate-200 hover:border-rose-400{% endif %}">
+      Murojaat
+    </a>
+  </div>
+
+  {% if page_obj.object_list %}
+
+  <!-- Mobile card list -->
+  <div class="lg:hidden space-y-4">
+    {% for scan in page_obj %}
+    <a href="{% url 'scan_detail' scan.pk %}"
+      class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 flex items-center gap-4 hover:border-emerald-500 transition-colors group">
+      <!-- Thumbnail -->
+      <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+        {% if scan.image %}
+        <img src="{{ scan.image.url }}" alt="Tekshiruv rasmi" class="w-full h-full object-cover" loading="lazy" />
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        {% endif %}
+      </div>
+      <!-- Info -->
+      <div class="flex-1 min-w-0">
+        <p class="text-lg font-bold text-slate-900 truncate">
+          Tekshiruv #{{ scan.pk }}
+        </p>
+        <p class="text-sm text-slate-500 mt-0.5">{{ scan.created_at|date:"d.m.Y H:i" }}</p>
+        <div class="mt-2">{% include "partials/class_badge.html" %}</div>
+      </div>
+      <!-- Arrow -->
+      <svg class="w-6 h-6 text-slate-300 group-hover:text-slate-600 flex-shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Desktop table -->
+  <div class="hidden lg:block bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+    <table class="w-full text-base" aria-label="Tekshiruvlar jadvali">
+      <thead>
+        <tr class="border-b border-slate-100 text-left bg-slate-50/50">
+          <th class="px-8 py-5 text-sm font-bold text-slate-600 uppercase tracking-wider">Rasm</th>
+          <th class="px-8 py-5 text-sm font-bold text-slate-600 uppercase tracking-wider">ID</th>
+          <th class="px-8 py-5 text-sm font-bold text-slate-600 uppercase tracking-wider">Sana</th>
+          <th class="px-8 py-5 text-sm font-bold text-slate-600 uppercase tracking-wider">Natija</th>
+          <th class="px-8 py-5 text-sm font-bold text-slate-600 uppercase tracking-wider">Ishonch</th>
+          <th class="px-8 py-5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for scan in page_obj %}
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-8 py-5">
+            <div class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+              {% if scan.image %}
+              <img src="{{ scan.image.url }}" alt="Tekshiruv rasmi" class="w-full h-full object-cover" loading="lazy" />
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-8 py-5">
+            <p class="font-bold text-slate-900 text-lg">#{{ scan.pk }}</p>
+          </td>
+          <td class="px-8 py-5 text-base text-slate-600">{{ scan.created_at|date:"d.m.Y H:i" }}</td>
+          <td class="px-8 py-5">{% include "partials/class_badge.html" %}</td>
+          <td class="px-8 py-5">
+            {% if scan.confidence %}
+            <span class="text-slate-900 font-bold text-base">{{ scan.confidence_percent }}%</span>
+            {% else %}<span class="text-slate-400 text-base">—</span>{% endif %}
+          </td>
+          <td class="px-8 py-5 text-right">
+            <a href="{% url 'scan_detail' scan.pk %}"
+              class="text-base font-bold text-emerald-600 hover:text-emerald-700">
+              Ko'rish →
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav class="flex items-center justify-center gap-3 pt-4" aria-label="Sahifalash">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if class_filter %}&class={{ class_filter }}{% endif %}"
+      class="px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+      aria-label="Oldingi sahifa">
+      ← Oldingi
+    </a>
+    {% endif %}
+
+    <span class="px-5 py-2.5 text-base font-medium text-slate-600">
+      {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if class_filter %}&class={{ class_filter }}{% endif %}"
+      class="px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+      aria-label="Keyingi sahifa">
+      Keyingi →
+    </a>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-xs">
+    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+    </div>
+    <h3 class="text-2xl font-bold text-slate-900 mb-2">Tekshiruvlar topilmadi</h3>
+    <p class="text-base text-slate-500 mb-6 max-w-md mx-auto">
+      {% if class_filter %}Ushbu toifa bo'yicha hech qanday tekshiruv mavjud emas.{% else %}Hozircha tekshiruvlar o'tkazilmagan.{% endif %}
+    </p>
+    <a href="{% url 'new_scan' %}"
+      class="inline-flex items-center gap-2 px-6 py-3.5 bg-emerald-600 text-white font-semibold rounded-2xl hover:bg-emerald-700 transition-colors text-base">
+      Yangi tekshiruv boshlash
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

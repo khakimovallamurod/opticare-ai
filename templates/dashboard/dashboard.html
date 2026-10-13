@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Bosh sahifa{% endblock %}
+{% block page_title %}Bosh sahifa{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 py-8 space-y-8">
+
+  <!-- Greeting -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-reveal>
+    <div>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Salom, {{ request.user.first_name }}! 👋</h2>
+      <p class="text-slate-600 mt-1 text-lg">Bolangizning ko'z salomatligini muntazam kuzatib borish — eng muhim profilaktikadir.</p>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+
+    <!-- Card 1: Jami -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="50">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <span class="text-base font-semibold text-slate-600">Jami tekshiruvlar</span>
+      </div>
+      <p class="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight" data-countup="{{ stats.total }}">{{ stats.total }}</p>
+    </div>
+
+    <!-- Card 2: Oxirgi natija -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="100">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+        </div>
+        <span class="text-base font-semibold text-slate-600">Oxirgi natija</span>
+      </div>
+      <div class="py-1">
+        {% if stats.latest %}
+          {% with scan=stats.latest %}{% include "partials/class_badge.html" %}{% endwith %}
+        {% else %}
+          <span class="text-base text-slate-400">Tekshiruv yo'q</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Card 3: Shu oydagi -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="150">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <span class="text-base font-semibold text-slate-600">Shu oydagi</span>
+      </div>
+      <p class="text-4xl lg:text-5xl font-black text-sky-600 tracking-tight" data-countup="{{ stats.this_month }}">{{ stats.this_month }}</p>
+    </div>
+
+    <!-- Card 4: Murojaat tavsiya -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="200">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.834-1.96-.834-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+        </div>
+        <span class="text-base font-semibold text-slate-600">Murojaat tavsiya</span>
+      </div>
+      <p class="text-4xl lg:text-5xl font-black text-rose-600 tracking-tight" data-countup="{{ stats.consult_count }}">{{ stats.consult_count }}</p>
+    </div>
+
+  </div>
+
+  <!-- CTA card: White card with slate-200 border -->
+  <div class="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6" data-reveal>
+    <div class="space-y-2">
+      <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Yangi tekshiruv boshlash</h3>
+      <p class="text-slate-600 text-lg max-w-2xl leading-relaxed">
+        Bolangizning ko'z sohasini sun'iy intellekt yordamida tahlil qiling va tavsiyalar oling.
+      </p>
+    </div>
+    <a href="{% url 'new_scan' %}"
+      class="flex-shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold rounded-2xl transition-all shadow-sm hover:-translate-y-0.5 active:scale-95 min-h-[56px]"
+      id="dashboard-new-scan-btn">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+      </svg>
+      Tekshiruvni boshlash
+    </a>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+
+    <!-- Doughnut: class distribution (5 cols) -->
+    <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between" data-reveal>
+      <div>
+        <h3 class="text-xl font-bold text-slate-900 mb-1">Natijalar taqsimoti</h3>
+        <p class="text-sm text-slate-500 mb-6">Barcha o'tkazilgan tekshiruv natijalarining toifalar bo'yicha ulushi</p>
+      </div>
+      {% if stats.total > 0 %}
+      <div class="flex justify-center my-auto py-2">
+        <div class="w-64 h-64">
+          <canvas id="classChart" aria-label="Natijalar taqsimoti diagrammasi" role="img"></canvas>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-base text-slate-400 text-center py-16">Hali tekshiruvlar yo'q</p>
+      {% endif %}
+    </div>
+
+    <!-- Bar: monthly scans (7 cols) -->
+    <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between" data-reveal>
+      <div>
+        <h3 class="text-xl font-bold text-slate-900 mb-1">Oylik tekshiruvlar dinamikasi</h3>
+        <p class="text-sm text-slate-500 mb-6">Oxirgi 6 oydagi tekshiruvlar soni</p>
+      </div>
+      <div class="h-68 sm:h-72">
+        <canvas id="monthlyChart" aria-label="Oylik tekshiruvlar diagrammasi" role="img"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent scans -->
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden" data-reveal>
+    <div class="flex items-center justify-between px-7 sm:px-8 py-6 border-b border-slate-100">
+      <div>
+        <h3 class="text-2xl font-bold text-slate-900">So'nggi tekshiruvlar</h3>
+        <p class="text-sm text-slate-500 mt-1">Oxirgi 5 ta amalga oshirilgan tahlil natijalari</p>
+      </div>
+      <a href="{% url 'scan_history' %}" class="text-base font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors">
+        Barchasini ko'rish →
+      </a>
+    </div>
+
+    {% if recent_scans %}
+    <div class="divide-y divide-slate-100">
+      {% for scan in recent_scans %}
+      <a href="{% url 'scan_detail' scan.pk %}"
+        class="flex items-center justify-between px-7 sm:px-8 py-5 hover:bg-slate-50 transition-colors group">
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+            {% if scan.image %}
+            <img src="{{ scan.image.url }}" alt="Tekshiruv rasmi" class="w-full h-full object-cover" />
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center">
+              <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            {% endif %}
+          </div>
+          <div class="min-w-0">
+            <p class="text-base sm:text-lg font-bold text-slate-900 truncate">
+              Tekshiruv #{{ scan.pk }}
+            </p>
+            <p class="text-sm text-slate-500 mt-0.5">{{ scan.created_at|date:"d.m.Y H:i" }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 flex-shrink-0">
+          {% include "partials/class_badge.html" %}
+          <svg class="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 px-4">
+      <p class="text-base text-slate-500">Hozircha hech qanday tekshiruv o'tkazilmagan.</p>
+      <a href="{% url 'new_scan' %}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-base">
+        Birinchi tekshiruvni boshlash
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if stats.total > 0 %}
+const classCtx = document.getElementById('classChart');
+if (classCtx) {
+  new Chart(classCtx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ chart_class_labels|safe }},
+      datasets: [{
+        data: {{ chart_class_data|safe }},
+        backgroundColor: ['#059669', '#f59e0b', '#e11d48'],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+        borderWidth: 3,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      animation: {
+        duration: 900,
+        easing: 'easeOutQuart',
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { family: 'Inter', size: 13, weight: '500' }, padding: 18 },
+        },
+        tooltip: {
+          titleFont: { family: 'Inter', size: 14 },
+          bodyFont: { family: 'Inter', size: 13 },
+        },
+      },
+      cutout: '65%',
+    },
+  });
+}
+{% endif %}
+
+const monthlyCtx = document.getElementById('monthlyChart');
+if (monthlyCtx) {
+  new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_monthly_labels|safe }},
+      datasets: [{
+        label: "Tekshiruvlar",
+        data: {{ chart_monthly_data|safe }},
+        backgroundColor: '#059669',
+        borderRadius: 8,
+        borderSkipped: false,
+        maxBarThickness: 42,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 900,
+        easing: 'easeOutQuart',
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          titleFont: { family: 'Inter', size: 14 },
+          bodyFont: { family: 'Inter', size: 13 },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { family: 'Inter', size: 13 } },
+          grid: { color: '#f1f5f9' },
+        },
+        x: {
+          ticks: { font: { family: 'Inter', size: 13 } },
+          grid: { display: false },
+        },
+      },
+    },
+  });
+}
+</script>
+{% endblock %}

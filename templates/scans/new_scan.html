@@ -1,0 +1,640 @@
+{% extends "base.html" %}
+
+{% block title %}Yangi tekshiruv{% endblock %}
+{% block page_title %}Yangi tekshiruv{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8"
+  x-data="scanUploader()"
+  x-init="init()">
+
+  <!-- 1. Step Indicator -->
+  <div class="mb-8" data-reveal>
+    <div class="flex items-center justify-between max-w-md mx-auto">
+      <!-- Step 1 Dot -->
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all"
+          :class="step === 1 || step === 'camera' ? 'bg-emerald-600 text-white shadow-sm ring-4 ring-emerald-100' : 'bg-emerald-600 text-white'">
+          1
+        </div>
+        <span class="text-sm font-semibold"
+          :class="step === 1 || step === 'camera' ? 'text-emerald-700' : 'text-slate-500'">
+          Rasm tanlash
+        </span>
+      </div>
+
+      <!-- Connector line -->
+      <div class="flex-1 h-1 mx-3 rounded-full"
+        :class="step === 2 || submitting ? 'bg-emerald-600' : 'bg-slate-200'"></div>
+
+      <!-- Step 2 Dot -->
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all"
+          :class="step === 2 && !submitting ? 'bg-emerald-600 text-white ring-4 ring-emerald-100' : (submitting ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600')">
+          2
+        </div>
+        <span class="text-sm font-semibold"
+          :class="step === 2 ? 'text-emerald-700' : 'text-slate-500'">
+          Tekshirish
+        </span>
+      </div>
+
+      <!-- Connector line -->
+      <div class="flex-1 h-1 mx-3 rounded-full"
+        :class="submitting ? 'bg-emerald-600' : 'bg-slate-200'"></div>
+
+      <!-- Step 3 Dot -->
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-200 text-slate-600">
+          3
+        </div>
+        <span class="text-sm font-semibold text-slate-500">
+          Natija
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Instruction card -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 mb-8 shadow-xs" data-reveal>
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-sky-600 flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900">Suratga olish qoidalari</h3>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+      <div class="flex items-start gap-3">
+        <span class="w-7 h-7 rounded-lg bg-slate-100 text-emerald-700 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">✓</span>
+        <p class="text-base text-slate-600 font-medium leading-snug">Yaxshi yorug'likda suratga oling</p>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="w-7 h-7 rounded-lg bg-slate-100 text-emerald-700 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">✓</span>
+        <p class="text-base text-slate-600 font-medium leading-snug">15–25 sm masofadan ushlang</p>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="w-7 h-7 rounded-lg bg-slate-100 text-emerald-700 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">✓</span>
+        <p class="text-base text-slate-600 font-medium leading-snug">Yuz to'g'ri holatda bo'lsin</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Step 1: Image source selection -->
+  <div x-show="step === 1" class="space-y-8" data-reveal>
+
+    <!-- Two LARGE option cards (min-h-[180px]) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+      <!-- Camera card -->
+      <div class="bg-white rounded-3xl border-2 border-slate-200 hover:border-emerald-600 active:scale-[0.98] transition-all cursor-pointer p-8 flex flex-col items-center justify-center gap-4 text-center min-h-[180px] shadow-xs"
+        @click="openCamera()"
+        role="button" tabindex="0"
+        @keydown.enter="openCamera()"
+        @keydown.space.prevent="openCamera()"
+        aria-label="Kamera orqali olish">
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-8 h-8 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-slate-900">Kamera orqali olish</p>
+          <p class="text-base text-slate-500 mt-1">Smartfon kamerasidan jonli suratga oling</p>
+        </div>
+      </div>
+
+      <!-- Gallery card -->
+      <div class="bg-white rounded-3xl border-2 border-slate-200 hover:border-emerald-600 active:scale-[0.98] transition-all cursor-pointer p-8 flex flex-col items-center justify-center gap-4 text-center min-h-[180px] shadow-xs"
+        @click="$refs.galleryInput.click()"
+        role="button" tabindex="0"
+        @keydown.enter="$refs.galleryInput.click()"
+        @keydown.space.prevent="$refs.galleryInput.click()"
+        aria-label="Galereyadan yuklash">
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-8 h-8 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-slate-900">Galereyadan yuklash</p>
+          <p class="text-base text-slate-500 mt-1">Mavjud fotosuratni tanlang</p>
+        </div>
+        <!-- Hidden file input for gallery -->
+        <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden"
+          x-ref="galleryInput" @change="handleFileSelect($event)" aria-hidden="true" />
+      </div>
+
+    </div>
+
+    <!-- Hidden file input for mobile fallback camera -->
+    <input type="file" accept="image/*" capture="environment" class="hidden"
+      x-ref="cameraFallbackInput" @change="handleFileSelect($event)" aria-hidden="true" />
+
+    <!-- Desktop drop zone -->
+    <div class="hidden sm:block">
+      <div class="border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center bg-white hover:border-emerald-600 transition-all cursor-pointer"
+        :class="dragOver ? 'border-emerald-600 scale-[1.01] bg-slate-50' : ''"
+        @dragover.prevent="dragOver = true"
+        @dragleave.prevent="dragOver = false"
+        @drop.prevent="dragOver = false; handleDrop($event)"
+        @click="$refs.galleryInput.click()">
+        <div class="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-700">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <p class="text-xl font-bold text-slate-900">Rasmni bu yerga tashlang yoki tanlang</p>
+        <p class="text-base text-slate-500 mt-1.5">JPG, PNG yoki WEBP formatda</p>
+      </div>
+    </div>
+
+    <!-- Clean Sample Images Section for Testing -->
+    <div class="pt-4 border-t border-slate-200">
+      <div class="mb-4">
+        <h4 class="text-lg font-bold text-slate-900">Namuna rasmlar orqali sinab ko'rish</h4>
+        <p class="text-base text-slate-500 mt-0.5">O'zingizda rasm bo'lmasa, quyidagi tayyor namunalardan birini tanlang:</p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- Sample 1 -->
+        <button type="button"
+          @click="selectSample('/static/samples/sample_1_normal.jpg')"
+          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-emerald-600 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
+            <img src="/static/samples/sample_1_normal.jpg" alt="Sog'lom ko'z" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <span class="absolute bottom-2 left-2 bg-emerald-600 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Normal</span>
+          </div>
+          <div>
+            <p class="text-base font-bold text-slate-900 truncate">Sog'lom ko'z</p>
+            <p class="text-sm text-slate-500">Namuna 1</p>
+          </div>
+        </button>
+
+        <!-- Sample 2 -->
+        <button type="button"
+          @click="selectSample('/static/samples/sample_2_attention.jpg')"
+          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
+            <img src="/static/samples/sample_2_attention.jpg" alt="Kuzatuv talab holat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <span class="absolute bottom-2 left-2 bg-amber-500 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Kuzatuv</span>
+          </div>
+          <div>
+            <p class="text-base font-bold text-slate-900 truncate">Engil qizarish</p>
+            <p class="text-sm text-slate-500">Namuna 2</p>
+          </div>
+        </button>
+
+        <!-- Sample 3 -->
+        <button type="button"
+          @click="selectSample('/static/samples/sample_3_clinic.jpg')"
+          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-rose-600 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
+            <img src="/static/samples/sample_3_clinic.jpg" alt="Murojaat talab holat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <span class="absolute bottom-2 left-2 bg-rose-600 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Murojaat</span>
+          </div>
+          <div>
+            <p class="text-base font-bold text-slate-900 truncate">Klinik holat</p>
+            <p class="text-sm text-slate-500">Namuna 3</p>
+          </div>
+        </button>
+
+        <!-- Sample 4 -->
+        <button type="button"
+          @click="selectSample('/static/samples/sample_4_portrait.jpg')"
+          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-sky-600 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
+            <img src="/static/samples/sample_4_portrait.jpg" alt="Frontal portret" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <span class="absolute bottom-2 left-2 bg-sky-600 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Portret</span>
+          </div>
+          <div>
+            <p class="text-base font-bold text-slate-900 truncate">Frontal ko'rinish</p>
+            <p class="text-sm text-slate-500">Namuna 4</p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Step 1b: Live camera view (getUserMedia) -->
+  <div x-show="step === 'camera'" class="space-y-5" style="display:none">
+    <div class="flex items-center justify-between">
+      <h3 class="text-xl font-bold text-slate-900">Kamera ko'rinishi</h3>
+      <button @click="closeCamera()" class="text-base font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-slate-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Bekor qilish
+      </button>
+    </div>
+
+    <!-- Live Camera Container with Oval Guide & Corner Brackets -->
+    <div class="relative rounded-3xl overflow-hidden bg-slate-900 w-full" style="aspect-ratio: 4/3;">
+      <video x-ref="videoEl" class="w-full h-full object-cover" autoplay playsinline muted></video>
+
+      <!-- Oval Eye-Area Guide Overlay -->
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none p-6">
+        <div class="relative w-4/5 h-3/4 rounded-[48px] border-2 border-white/60 flex items-center justify-center">
+          <!-- Corner brackets -->
+          <span class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-xl"></span>
+          <span class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-xl"></span>
+          <span class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-xl"></span>
+          <span class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-xl"></span>
+
+          <!-- Hint chip -->
+          <div class="bg-slate-900/80 backdrop-blur-xs px-4 py-1.5 rounded-full text-white text-sm font-semibold">
+            Ko'zlar ramka ichida bo'lsin
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camera controls -->
+    <div class="flex items-center justify-center gap-6 py-2">
+      <!-- Switch camera -->
+      <button @click="switchCamera()"
+        class="w-14 h-14 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm"
+        aria-label="Kamerani almashtirish">
+        <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      </button>
+
+      <!-- 72px Shutter button (white ring + solid emerald core) -->
+      <button @click="capturePhoto()"
+        class="w-[72px] h-[72px] rounded-full bg-white border-4 border-slate-300 p-1 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+        aria-label="Suratga olish">
+        <span class="w-full h-full rounded-full bg-emerald-600 block"></span>
+      </button>
+
+      <!-- Close / Back -->
+      <button @click="closeCamera()"
+        class="w-14 h-14 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm"
+        aria-label="Yopish">
+        <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <canvas x-ref="captureCanvas" class="hidden" aria-hidden="true"></canvas>
+
+    <p class="text-center text-sm text-slate-500">
+      Kamera ishlamayotgan bo'lsa:
+      <button @click="useFallbackCamera()" class="text-emerald-600 font-semibold underline">
+        Fayl sifatida olish
+      </button>
+    </p>
+  </div>
+
+  <!-- Step 2: Preview state -->
+  <div x-show="step === 2" class="space-y-6" style="display:none">
+    <div class="flex items-center justify-between">
+      <h3 class="text-xl font-bold text-slate-900">Tanlangan rasm</h3>
+      <button @click="retake()"
+        class="flex items-center gap-2 text-base font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Qayta tanlash
+      </button>
+    </div>
+
+    <!-- Image preview with scan line loop -->
+    <div class="relative rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm max-h-96">
+      <img :src="previewUrl" alt="Tanlangan ko'z rasmi" class="w-full max-h-96 object-contain mx-auto" />
+      
+      <!-- 2px solid emerald scan line loop while submitting/previewing -->
+      <div x-show="submitting"
+        class="absolute inset-x-0 h-0.5 bg-emerald-600 animate-scan-line pointer-events-none"></div>
+    </div>
+
+    <!-- Validation error alert -->
+    <div x-show="validationError" class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-base text-rose-800 font-medium"
+      x-text="validationError" role="alert"></div>
+
+    <!-- Scan Form (NO child info inputs per product requirement) -->
+    <form method="post" enctype="multipart/form-data" @submit.prevent="submitScan($event)"
+      id="scan-form" class="space-y-6">
+      {% csrf_token %}
+
+      <!-- Hidden image input -->
+      <input type="file" name="image" class="hidden" x-ref="formImageInput" aria-hidden="true" />
+
+      <!-- Server-side errors -->
+      {% if form.errors %}
+      <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-base text-rose-800">
+        {% for field in form %}{% for error in field.errors %}
+        <p>{{ error }}</p>
+        {% endfor %}{% endfor %}
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Action buttons -->
+      <div class="flex flex-col sm:flex-row items-center gap-4 pt-2">
+        <button type="button" @click="retake()"
+          class="w-full sm:w-auto px-6 py-4 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-2xl border border-slate-200 transition-colors text-lg min-h-[56px]">
+          Qayta tanlash
+        </button>
+
+        <button type="submit" id="submit-scan-btn" :disabled="submitting"
+          class="w-full flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95 text-lg min-h-[56px]">
+          <span x-show="!submitting">
+            <svg class="w-6 h-6 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            Tahlil qilish
+          </span>
+          <span x-show="submitting" class="flex items-center gap-2">
+            AI tahlil qilmoqda...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div x-show="submitting" style="display:none"
+    class="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6"
+    aria-live="assertive" role="status">
+    
+    <div class="bg-white border border-slate-200 rounded-3xl p-8 max-w-sm w-full shadow-lg text-center flex flex-col items-center">
+      <!-- Blinking eye icon -->
+      <div class="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6 animate-eye-blink text-emerald-600">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+      </div>
+
+      <!-- Rotating Status text -->
+      <h3 class="text-xl font-bold text-slate-900 mb-2" x-text="loadingTexts[currentLoadingIndex]">
+        Rasm tekshirilmoqda...
+      </h3>
+      <p class="text-base text-slate-500 mb-6">Sun'iy intellekt ko'z holatini baholamoqda</p>
+
+      <!-- Indeterminate solid progress bar -->
+      <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden relative">
+        <div class="absolute inset-y-0 w-1/3 bg-emerald-600 rounded-full animate-indeterminate"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scanUploader() {
+  return {
+    step: 1,
+    previewUrl: null,
+    selectedFile: null,
+    validationError: null,
+    submitting: false,
+    dragOver: false,
+    cameraStream: null,
+    facingMode: 'environment',
+
+    loadingTexts: [
+      "Rasm tekshirilmoqda...",
+      "Ko'z sohasi tahlil qilinmoqda...",
+      "Natija tayyorlanmoqda..."
+    ],
+    currentLoadingIndex: 0,
+    loadingInterval: null,
+
+    init() {
+      // Form initialization
+    },
+
+    startLoadingRotation() {
+      this.currentLoadingIndex = 0;
+      this.loadingInterval = setInterval(() => {
+        this.currentLoadingIndex = (this.currentLoadingIndex + 1) % this.loadingTexts.length;
+      }, 2000);
+    },
+
+    stopLoadingRotation() {
+      if (this.loadingInterval) {
+        clearInterval(this.loadingInterval);
+        this.loadingInterval = null;
+      }
+    },
+
+    // Image source methods
+    async openCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        this.$refs.cameraFallbackInput.click();
+        return;
+      }
+      try {
+        this.cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: this.facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+          audio: false,
+        });
+        this.step = 'camera';
+        await this.$nextTick();
+        this.$refs.videoEl.srcObject = this.cameraStream;
+      } catch (err) {
+        console.warn('getUserMedia xatosi:', err);
+        this.$refs.cameraFallbackInput.click();
+      }
+    },
+
+    closeCamera() {
+      this._stopStream();
+      this.step = 1;
+    },
+
+    _stopStream() {
+      if (this.cameraStream) {
+        this.cameraStream.getTracks().forEach(t => t.stop());
+        this.cameraStream = null;
+      }
+    },
+
+    async switchCamera() {
+      this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
+      this._stopStream();
+      await this.openCamera();
+    },
+
+    capturePhoto() {
+      const video = this.$refs.videoEl;
+      const canvas = this.$refs.captureCanvas;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      const MAX_DIM = 1280;
+      let w = canvas.width, h = canvas.height;
+      if (Math.max(w, h) > MAX_DIM) {
+        const ratio = MAX_DIM / Math.max(w, h);
+        const scaled = document.createElement('canvas');
+        scaled.width = Math.round(w * ratio);
+        scaled.height = Math.round(h * ratio);
+        scaled.getContext('2d').drawImage(canvas, 0, 0, scaled.width, scaled.height);
+        canvas.width = scaled.width;
+        canvas.height = scaled.height;
+        ctx.drawImage(scaled, 0, 0);
+      }
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        this.selectedFile = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
+        this.previewUrl = URL.createObjectURL(blob);
+        this._stopStream();
+        this.step = 2;
+      }, 'image/jpeg', 0.85);
+    },
+
+    useFallbackCamera() {
+      this._stopStream();
+      this.step = 1;
+      this.$refs.cameraFallbackInput.click();
+    },
+
+    async selectSample(url) {
+      this.validationError = null;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Yuklab bo'lmadi");
+        const blob = await res.blob();
+        this.selectedFile = new File([blob], 'sample_eye.jpg', { type: 'image/jpeg' });
+        this.previewUrl = URL.createObjectURL(blob);
+        this.step = 2;
+      } catch (err) {
+        console.error(err);
+        this.validationError = "Namuna rasmni yuklashda xatolik yuz berdi.";
+      }
+    },
+
+    handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      this._processFile(file);
+    },
+
+    handleDrop(event) {
+      const file = event.dataTransfer.files[0];
+      if (!file) return;
+      this._processFile(file);
+    },
+
+    _processFile(file) {
+      this.validationError = null;
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.validationError = "Faqat JPG, PNG yoki WEBP formatdagi rasmlar qabul qilinadi.";
+        this.step = 2;
+        this.previewUrl = null;
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        this.validationError = "Rasm hajmi 8 MB dan oshmasligi kerak.";
+        this.step = 2;
+        this.previewUrl = null;
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_DIM = 1280;
+          let w = img.width, h = img.height;
+          if (Math.max(w, h) > MAX_DIM) {
+            const ratio = MAX_DIM / Math.max(w, h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(blob => {
+            if (!blob) { this.validationError = "Rasm qayta ishlashda xatolik."; return; }
+            this.selectedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+            this.previewUrl = URL.createObjectURL(blob);
+            this.step = 2;
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    retake() {
+      this.selectedFile = null;
+      this.previewUrl = null;
+      this.validationError = null;
+      this.step = 1;
+    },
+
+    async submitScan(event) {
+      if (this.submitting) return;
+      this.validationError = null;
+
+      if (!this.selectedFile) {
+        this.validationError = "Iltimos, avval rasm tanlang.";
+        return;
+      }
+
+      this.submitting = true;
+      this.startLoadingRotation();
+
+      const form = document.getElementById('scan-form');
+      const fd = new FormData(form);
+      fd.set('image', this.selectedFile, this.selectedFile.name);
+
+      try {
+        const response = await fetch(form.action || window.location.href, {
+          method: 'POST',
+          body: fd,
+          headers: { 'X-CSRFToken': fd.get('csrfmiddlewaretoken') },
+          credentials: 'same-origin',
+        });
+
+        if (response.redirected) {
+          window.location.href = response.url;
+          return;
+        }
+
+        const text = await response.text();
+        if (response.ok || response.status === 200) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text, 'text/html');
+          document.documentElement.innerHTML = doc.documentElement.innerHTML;
+        } else {
+          this.submitting = false;
+          this.stopLoadingRotation();
+          this.validationError = "Yuborish xatosi yuz berdi. Qayta urinib ko'ring.";
+        }
+      } catch (err) {
+        console.error(err);
+        this.submitting = false;
+        this.stopLoadingRotation();
+        this.validationError = "Tarmoq xatosi. Internet ulanishini tekshiring.";
+      }
+    },
+  };
+}
+</script>
+{% endblock %}
