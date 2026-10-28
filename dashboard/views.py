@@ -13,7 +13,6 @@ from scans.selectors import get_user_stats
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Main dashboard page."""
 
-    login_url = "/"
     template_name = "dashboard/dashboard.html"
 
     def get_context_data(self, **kwargs):
@@ -43,7 +42,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 class StatisticsView(LoginRequiredMixin, TemplateView):
     """Detailed statistics page."""
 
-    login_url = "/"
     template_name = "dashboard/statistics.html"
 
     def get_context_data(self, **kwargs):

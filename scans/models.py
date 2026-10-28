@@ -95,6 +95,54 @@ class Scan(models.Model):
             self.CLASS_CONSULT: "Shifokorga murojaat qiling",
         }.get(self.result_class, "Noma'lum")
 
+    URGENCY_META = {
+        "past": {"level": 1, "label": "Past", "color": "emerald",
+                 "doctor_visit": "Rejali profilaktik ko'rik — yiliga 1 marta"},
+        "orta": {"level": 2, "label": "O'rta", "color": "amber",
+                 "doctor_visit": "Holatni 3–7 kun kuzating; yaxshilanmasa 1–2 hafta ichida oftalmologga boring"},
+        "yuqori": {"level": 3, "label": "Yuqori", "color": "orange",
+                   "doctor_visit": "2–3 kun ichida bolalar oftalmologiga uchrashing"},
+        "shoshilinch": {"level": 4, "label": "Shoshilinch", "color": "rose",
+                        "doctor_visit": "Bugunoq (24 soat ichida) shifokorga murojaat qiling"},
+    }
+    CLASS_DEFAULT_URGENCY = {CLASS_NORMAL: "past", CLASS_ATTENTION: "orta", CLASS_CONSULT: "yuqori"}
+    PRIORITY_LABELS = {"muhim": "Muhim", "tavsiya": "Tavsiya etiladi", "qoshimcha": "Qo'shimcha"}
+
+    @property
+    def urgency(self):
+        """Recommendation level info: key, level (1-4), label, color, doctor_visit, reason."""
+        raw = self.raw_response if isinstance(self.raw_response, dict) else {}
+        key = raw.get("urgency")
+        if key not in self.URGENCY_META:
+            key = self.CLASS_DEFAULT_URGENCY.get(self.result_class)
+        if key is None:
+            return None
+        meta = self.URGENCY_META[key]
+        return {
+            "key": key,
+            **meta,
+            "doctor_visit": raw.get("doctor_visit") or meta["doctor_visit"],
+            "reason": raw.get("urgency_reason", ""),
+            "steps": range(1, 5),
+        }
+
+    @property
+    def recommendation_items(self):
+        """Recommendations as [{text, priority, priority_label}]; legacy plain strings supported."""
+        items = []
+        for rec in self.recommendations or []:
+            if isinstance(rec, dict):
+                text, priority = rec.get("text", ""), rec.get("priority", "tavsiya")
+            else:
+                text, priority = str(rec), None
+            if text:
+                items.append({
+                    "text": text,
+                    "priority": priority,
+                    "priority_label": self.PRIORITY_LABELS.get(priority, ""),
+                })
+        return items
+
     @property
     def confidence_percent(self):
         """Return confidence as percentage (0-100), safely handling both 0-1 and 0-100 values."""

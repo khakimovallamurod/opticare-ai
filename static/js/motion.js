@@ -102,7 +102,105 @@
     });
   }
 
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  // ── Custom cursor: dot + trailing ring ──────────────────
+  function initCursor() {
+    if (!finePointer || prefersReduced) return;
+
+    const root = document.documentElement;
+    const dot = document.createElement('div');
+    const ring = document.createElement('div');
+    const label = document.createElement('span');
+    dot.className = 'oc-cursor-dot';
+    ring.className = 'oc-cursor-ring';
+    dot.setAttribute('aria-hidden', 'true');
+    ring.setAttribute('aria-hidden', 'true');
+    ring.appendChild(label);
+    document.body.append(dot, ring);
+    root.classList.add('oc-cursor-enabled');
+
+    let mx = -100, my = -100, rx = -100, ry = -100;
+
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX;
+      my = e.clientY;
+      dot.style.transform = `translate3d(${mx}px, ${my}px, 0)`;
+      root.classList.add('oc-cursor-on');
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', () => root.classList.remove('oc-cursor-on'));
+    window.addEventListener('mousedown', () => root.classList.add('oc-cursor-down'));
+    window.addEventListener('mouseup', () => root.classList.remove('oc-cursor-down'));
+
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target;
+      const labelled = target.closest('[data-cursor]');
+      const textual = target.closest('input:not([type=file]):not([type=submit]):not([type=button]), textarea, select');
+      const interactive = target.closest('a, button, label, [role=button], [data-tilt]');
+
+      root.classList.toggle('oc-cursor-text', !!textual);
+      root.classList.toggle('oc-cursor-label', !!labelled);
+      root.classList.toggle('oc-cursor-hover', !!interactive && !labelled);
+      label.textContent = labelled ? labelled.getAttribute('data-cursor') : '';
+    });
+
+    (function loop() {
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  // ── 3D tilt with glare for [data-tilt] ──────────────────
+  function initTilt() {
+    if (!finePointer || prefersReduced) return;
+
+    document.querySelectorAll('[data-tilt]').forEach((el) => {
+      const max = parseFloat(el.getAttribute('data-tilt') || '') || 7;
+
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width;
+        const py = (e.clientY - r.top) / r.height;
+        el.classList.add('is-tilting');
+        el.style.setProperty('--ry', `${(px - 0.5) * max * 2}deg`);
+        el.style.setProperty('--rx', `${(0.5 - py) * max * 2}deg`);
+        el.style.setProperty('--gx', `${px * 100}%`);
+        el.style.setProperty('--gy', `${py * 100}%`);
+      });
+
+      el.addEventListener('mouseleave', () => {
+        el.classList.remove('is-tilting');
+        el.style.setProperty('--rx', '0deg');
+        el.style.setProperty('--ry', '0deg');
+      });
+    });
+  }
+
+  // ── Magnetic buttons ────────────────────────────────────
+  function initMagnetic() {
+    if (!finePointer || prefersReduced) return;
+
+    document.querySelectorAll('[data-magnetic]').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        el.style.transform = `translate(${dx * 0.18}px, ${dy * 0.28}px)`;
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = '';
+      });
+    });
+  }
+
   // ── Chart.js Global Animated Draw Defaults ───────────────
+  if (window.Chart) {
+    window.Chart.defaults.font.family = '"Plus Jakarta Sans", Inter, sans-serif';
+    window.Chart.defaults.color = '#5b6b80';
+  }
   if (window.Chart && !prefersReduced) {
     window.Chart.defaults.animation = {
       duration: 900,
@@ -111,15 +209,18 @@
   }
 
   // ── Run on DOMContentLoaded ──────────────────────────────
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initScrollReveal();
-      initCountUp();
-      initToasts();
-    });
-  } else {
+  function initAll() {
     initScrollReveal();
     initCountUp();
     initToasts();
+    initCursor();
+    initTilt();
+    initMagnetic();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
   }
 })();

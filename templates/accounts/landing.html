@@ -1,726 +1,439 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="uz" class="h-full">
+<html lang="uz" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Bolaning ko'z sohasi rasmini yuklang: sun'iy intellekt ko'z holatini tahlil qilib, natija va tavsiyalarni beradi. Natijalar tarixi saqlanadi." />
   <title>OptiCare | Bolalar ko'z salomatligi uchun AI tahlil</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/logo-mark.svg' %}" />
 
-  <!-- Font: Inter -->
   <link rel="preconnect" href="https://fonts.bunny.net" />
-  <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-          keyframes: {
-            floatSlow: {
-              '0%, 100%': { transform: 'translateY(0px)' },
-              '50%': { transform: 'translateY(-14px)' },
-            },
-          },
-          animation: {
-            'float-slow': 'floatSlow 6s ease-in-out infinite',
-          },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          colors: { ink: '#0b1220', brand: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 600: '#048a68', 700: '#047857' } },
         },
       },
     };
   </script>
-
-  <!-- Alpine.js -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-  <style>
-    html {
-      font-size: 17px;
-      scroll-behavior: smooth;
-    }
-    @media (min-width: 1024px) {
-      html {
-        font-size: 18px;
-      }
-    }
-    body {
-      font-family: 'Inter', sans-serif;
-      line-height: 1.65;
-      background-color: #f8fafc;
-      color: #0f172a;
-    }
-    *:focus-visible {
-      outline: 2px solid #059669;
-      outline-offset: 2px;
-    }
-    [data-reveal] {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    }
-    .reveal-active {
-      opacity: 1 !important;
-      transform: translateY(0) !important;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      [data-reveal] {
-        opacity: 1 !important;
-        transform: none !important;
-      }
-      *, ::before, ::after {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-      }
-    }
-  </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/opticare.css' %}" />
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased selection:bg-emerald-100 selection:text-emerald-900 min-h-screen flex flex-col">
+<body class="text-ink antialiased selection:bg-emerald-100 selection:text-emerald-900 min-h-screen flex flex-col">
+  <div class="oc-bg" aria-hidden="true"></div>
 
   <!-- Toast messages -->
-  <div class="fixed top-4 right-4 z-50 space-y-2 w-88 max-w-[calc(100vw-2rem)]" aria-live="polite">
+  <div class="fixed top-4 right-4 z-50 space-y-2 w-80 max-w-[calc(100vw-2rem)]" aria-live="polite">
     {% for message in messages %}
     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-      class="flex items-start gap-3 p-4 rounded-2xl shadow-md border bg-white
-        {% if message.tags == 'error' %}border-rose-300 text-slate-900
-        {% elif message.tags == 'warning' %}border-amber-300 text-slate-900
-        {% else %}border-emerald-300 text-slate-900{% endif %}"
-      role="alert">
-      <div class="w-3 h-3 rounded-full mt-1.5 flex-shrink-0
-        {% if message.tags == 'error' %}bg-rose-600
-        {% elif message.tags == 'warning' %}bg-amber-500
-        {% else %}bg-emerald-600{% endif %}"></div>
-      <div class="flex-1 text-base font-semibold text-slate-800 leading-snug">{{ message }}</div>
-      <button @click="show = false" class="text-slate-400 hover:text-slate-600 p-1" aria-label="Yopish">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      class="oc-card flex items-start gap-3 p-3.5" role="alert">
+      <div class="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0
+        {% if message.tags == 'error' %}bg-rose-600{% elif message.tags == 'warning' %}bg-amber-500{% else %}bg-emerald-600{% endif %}"></div>
+      <div class="flex-1 text-sm font-semibold text-slate-800 leading-snug">{{ message }}</div>
+      <button @click="show = false" class="text-slate-400 hover:text-slate-600 p-0.5" aria-label="Yopish">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     {% endfor %}
   </div>
 
-  <!-- ===== STICKY HEADER ===== -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <!-- Logo -->
-      <a href="/" class="flex items-center gap-3.5 group">
-        <div class="w-11 h-11 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-          </svg>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">OptiCare</span>
-          <span class="text-sm font-medium text-slate-500 mt-1 leading-none">Bolalar ko'z salomatligi</span>
-        </div>
-      </a>
+  <!-- ===== FLOATING HEADER ===== -->
+  <header class="sticky top-0 z-40 px-3 sm:px-6 pt-3">
+    <div class="oc-glass max-w-7xl mx-auto h-16 rounded-2xl px-3 sm:px-5 flex items-center justify-between">
+      <a href="/" aria-label="OptiCare bosh sahifa">{% include "partials/logo.html" with size=38 %}</a>
 
-      <!-- Nav links & CTA -->
-      <div class="flex items-center gap-5 sm:gap-8">
-        <a href="#how-it-works" class="hidden md:inline-block text-base font-semibold text-slate-600 hover:text-emerald-600 transition-colors">
-          Qanday ishlaydi
+      <nav class="hidden md:flex items-center gap-1 text-sm font-semibold text-slate-600" aria-label="Sahifa bo'limlari">
+        <a href="#how-it-works" class="px-3.5 py-2 rounded-xl hover:bg-white/80 hover:text-ink transition-colors">Qanday ishlaydi</a>
+        <a href="#samples" class="px-3.5 py-2 rounded-xl hover:bg-white/80 hover:text-ink transition-colors">Namunalar</a>
+        <a href="#features" class="px-3.5 py-2 rounded-xl hover:bg-white/80 hover:text-ink transition-colors">Afzalliklar</a>
+      </nav>
+
+      <a href="{% url 'login' %}" id="nav-demo-btn" class="oc-btn oc-btn-primary !py-2.5 !px-4 text-sm" data-magnetic>
+          Tizimga kirish
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M13 7l5 5-5 5M6 12h12"/></svg>
         </a>
-        <a href="#features" class="hidden md:inline-block text-base font-semibold text-slate-600 hover:text-emerald-600 transition-colors">
-          Afzalliklar
-        </a>
-        <form method="post" action="{% url 'demo_login' %}">
-          {% csrf_token %}
-          <button type="submit" id="nav-demo-btn"
-            class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-base font-bold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95 min-h-[48px]">
-            Demo bilan kirish →
-          </button>
-        </form>
-      </div>
     </div>
   </header>
 
-  <!-- ===== HERO SECTION ===== -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-16 lg:pb-28">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-      
-      <!-- Text side -->
-      <div class="lg:col-span-7 text-center lg:text-left space-y-7" data-reveal>
-        <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-slate-200 text-slate-700 text-sm font-semibold shadow-xs">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-          Sun'iy intellekt asosida ko'z holatini tahlil qilish
-        </div>
+  <!-- ===== HERO ===== -->
+  <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-10 lg:py-8 min-h-[calc(100svh-76px)] flex items-center">
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
 
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12]">
-          Bolangizning ko'z holatini rasm orqali tahlil qiling
+      <div class="lg:col-span-6 text-center lg:text-left space-y-6" data-reveal>
+        <span class="oc-chip">
+          <span class="relative flex w-2 h-2">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping"></span>
+            <span class="relative inline-flex w-2 h-2 rounded-full bg-emerald-600"></span>
+          </span>
+          Sun'iy intellekt asosidagi ko'z tahlili
+        </span>
+
+        <h1 class="text-[2.2rem] sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight leading-[1.08]">
+          Bolangiz ko'zini <span class="oc-gradient-text">bir rasm</span> orqali tekshiring
         </h1>
 
-        <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-          OptiCare bolaning ko'z sohasi rasmini sun'iy intellekt yordamida tahlil qiladi, ko'z holatini 3 ta natijadan biriga ajratadi va ota-onaga amaliy tavsiyalar beradi. Barcha tekshiruvlar tarixda saqlanadi.
+        <p class="text-base sm:text-[1.05rem] text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+          OptiCare ko'z sohasi rasmini AI yordamida tahlil qiladi, holatni 3 toifadan biriga ajratadi va ota-onaga tushunarli tavsiyalar beradi.
         </p>
 
-        <!-- CTAs -->
-        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-          <form method="post" action="{% url 'demo_login' %}" class="w-full sm:w-auto">
-            {% csrf_token %}
-            <button type="submit" id="hero-demo-btn"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95 min-h-[56px]">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-1">
+          <a href="{% url 'login' %}" id="hero-demo-btn" class="oc-btn oc-btn-primary w-full sm:w-auto !px-6 !py-3.5" data-magnetic>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              Demo bilan kirish
-            </button>
-          </form>
+              Tizimga kirish
+            </a>
+          <a href="#how-it-works" class="oc-btn oc-btn-ghost w-full sm:w-auto !px-6 !py-3.5">Qanday ishlaydi</a>
+        </div>
 
-          <a href="#how-it-works"
-            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-slate-100 text-slate-700 text-lg font-semibold rounded-2xl border border-slate-200 transition-all hover:-translate-y-0.5 active:scale-95 min-h-[56px]">
-            Qanday ishlaydi ↓
+        <!-- Mini stats -->
+        <dl class="grid grid-cols-3 gap-3 max-w-md mx-auto lg:mx-0 pt-3">
+          <div class="oc-card px-3 py-3 text-center lg:text-left">
+            <dt class="text-[0.7rem] font-semibold text-slate-500 uppercase tracking-wide">Natija</dt>
+            <dd class="text-lg font-extrabold">~5 soniya</dd>
+          </div>
+          <div class="oc-card px-3 py-3 text-center lg:text-left">
+            <dt class="text-[0.7rem] font-semibold text-slate-500 uppercase tracking-wide">Toifalar</dt>
+            <dd class="text-lg font-extrabold">3 xil</dd>
+          </div>
+          <div class="oc-card px-3 py-3 text-center lg:text-left">
+            <dt class="text-[0.7rem] font-semibold text-slate-500 uppercase tracking-wide">Til</dt>
+            <dd class="text-lg font-extrabold">O'zbek</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Hero visual: 3D tilt card with layered badges -->
+      <div class="lg:col-span-6" data-reveal data-delay="150">
+        <div class="relative mx-auto max-w-2xl">
+          <div class="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-tr from-emerald-300/40 via-teal-200/30 to-sky-300/40 blur-3xl" aria-hidden="true"></div>
+
+          <div class="oc-card p-2 rounded-[1.9rem]" data-tilt="6">
+            <div class="relative rounded-[1.5rem] overflow-hidden">
+              <picture>
+                <source srcset="{% static 'img/hero-child.webp' %}" type="image/webp" />
+                <img src="{% static 'img/hero-child.jpg' %}" width="1536" height="1024"
+                  alt="Bir ko'zini qo'li bilan yopgan qiz va telefonda OptiCare ko'z testi"
+                  class="w-full h-auto block" fetchpriority="high" />
+              </picture>
+            </div>
+
+            <!-- Depth badges -->
+            <div class="oc-glass oc-depth-2 absolute -left-4 sm:-left-8 bottom-10 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
+              <span class="oc-icon oc-icon--brand !w-9 !h-9">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </span>
+              <span class="leading-tight">
+                <span class="block text-[0.7rem] font-semibold text-slate-500">AI tahlil</span>
+                <span class="block text-sm font-extrabold">Tez va aniq</span>
+              </span>
+            </div>
+
+            <div class="oc-glass oc-depth-3 absolute -right-3 sm:-right-6 -bottom-5 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.2)]"></span>
+              <span class="text-sm font-bold">Tarix saqlanadi</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== OPTICARE NIMA? ===== -->
+  <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12">
+    <div class="text-center max-w-2xl mx-auto mb-10" data-reveal>
+      <span class="oc-chip mb-3">Platforma haqida</span>
+      <h2 class="text-2xl sm:text-[2.1rem] font-extrabold tracking-tight mb-3">OptiCare nima?</h2>
+      <p class="text-[0.95rem] text-slate-600">Bolalar ko'z salomatligini o'z vaqtida e'tiborga olish uchun qulay raqamli yordamchi.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="oc-card p-6" data-tilt data-reveal data-delay="80">
+        <span class="oc-icon text-sky-600 mb-4">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Rasm orqali tahlil</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Telefon kamerasi yoki galereyadagi rasm yetarli. AI qizarish, quruqlik va o'zgarishlarni tahlil qiladi.</p>
+      </div>
+
+      <div class="oc-card p-6" data-tilt data-reveal data-delay="160">
+        <span class="oc-icon text-emerald-600 mb-4">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">3 xil natija</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Yaxshi holat, kuzatuv talab etadi yoki shifokorga murojaat — har bir tahlil aniq toifaga ajratiladi.</p>
+      </div>
+
+      <div class="oc-card p-6" data-tilt data-reveal data-delay="240">
+        <span class="oc-icon text-violet-600 mb-4">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Tavsiya va tarix</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Har bir natijaga amaliy tavsiyalar beriladi, tekshiruvlar tarixda saqlanib, o'zgarishlar kuzatiladi.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MUAMMO (DARK 3D PANEL) ===== -->
+  <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12">
+    <div class="relative overflow-hidden rounded-[1.75rem] bg-[#0b1220] text-white p-7 sm:p-12 shadow-[0_40px_80px_-30px_rgba(11,18,32,0.6)]" data-reveal>
+      <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-emerald-500/25 blur-3xl" aria-hidden="true"></div>
+      <div class="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-sky-500/20 blur-3xl" aria-hidden="true"></div>
+      <img src="{% static 'img/logo-mark.svg' %}" alt="" aria-hidden="true" class="absolute right-6 top-6 w-40 opacity-[0.06] hidden md:block" />
+
+      <div class="relative max-w-2xl mb-9">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-300 text-xs font-bold mb-4">Nega muhim?</span>
+        <h2 class="text-2xl sm:text-[2.1rem] font-extrabold tracking-tight mb-3 leading-tight">Bolalar ko'z holatini kuzatish nega muhim?</h2>
+        <p class="text-[0.95rem] text-slate-300 leading-relaxed">Bolalar ekrandan faol foydalanishadi. Ko'z charchoqligi, qizarish va boshlang'ich o'zgarishlar ko'pincha kech seziladi.</p>
+      </div>
+
+      <div class="relative grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-2xl bg-white/[0.06] border border-white/10 p-5 backdrop-blur hover:bg-white/[0.09] transition-colors">
+          <span class="text-3xl font-extrabold text-emerald-400/90">01</span>
+          <h3 class="text-base font-bold mt-2 mb-1">Uzoq ekran vaqti</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">Smartfon va kompyuter qarshisida uzoq o'tirish ko'z quruqligi va charchoqni keltirib chiqaradi.</p>
+        </div>
+        <div class="rounded-2xl bg-white/[0.06] border border-white/10 p-5 backdrop-blur hover:bg-white/[0.09] transition-colors">
+          <span class="text-3xl font-extrabold text-emerald-400/90">02</span>
+          <h3 class="text-base font-bold mt-2 mb-1">Kech sezilgan alomatlar</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">Kichik bolalar ko'zlaridagi noqulaylikni so'z bilan tushuntirib bera olmasliklari mumkin.</p>
+        </div>
+        <div class="rounded-2xl bg-white/[0.06] border border-white/10 p-5 backdrop-blur hover:bg-white/[0.09] transition-colors">
+          <span class="text-3xl font-extrabold text-emerald-400/90">03</span>
+          <h3 class="text-base font-bold mt-2 mb-1">Vaqtida chora ko'rish</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">Muntazam foto-tahlil o'zgarishlarni erta aniqlab, shifokorga o'z vaqtida murojaat qilishga yordam beradi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== QANDAY ISHLAYDI ===== -->
+  <section id="how-it-works" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 scroll-mt-24">
+    <div class="text-center max-w-2xl mx-auto mb-10" data-reveal>
+      <span class="oc-chip mb-3">3 qadam</span>
+      <h2 class="text-2xl sm:text-[2.1rem] font-extrabold tracking-tight mb-3">Qanday ishlaydi?</h2>
+      <p class="text-[0.95rem] text-slate-600">Atigi 3 oddiy bosqichda ko'z holatini tekshiring va natijani oling.</p>
+    </div>
+
+    <div class="relative grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="hidden md:block absolute top-[3.1rem] left-[16%] right-[16%] h-px border-t-2 border-dashed border-emerald-300/70" aria-hidden="true"></div>
+
+      <div class="oc-card p-6" data-tilt data-reveal data-delay="80">
+        <span class="relative z-10 inline-flex w-11 h-11 rounded-2xl bg-[#0b1220] text-white font-extrabold items-center justify-center shadow-[0_10px_20px_-8px_rgba(11,18,32,0.6)] mb-4 oc-depth-1">1</span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Rasmga oling yoki yuklang</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Telefon kamerasi bilan bolaning yuz sohasini suratga oling yoki galereyadan rasm yuklang.</p>
+      </div>
+
+      <div class="oc-card p-6" data-tilt data-reveal data-delay="160">
+        <span class="relative z-10 oc-icon--brand inline-flex w-11 h-11 rounded-2xl font-extrabold items-center justify-center mb-4 oc-depth-1">2</span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">AI ko'z sohasini tahlil qiladi</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Sun'iy intellekt qizarish, quruqlik, qovoq holati, shish va yoshlanishni ko'rib chiqadi.</p>
+      </div>
+
+      <div class="oc-card p-6" data-tilt data-reveal data-delay="240">
+        <span class="relative z-10 inline-flex w-11 h-11 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 text-white font-extrabold items-center justify-center shadow-[0_10px_20px_-8px_rgba(2,132,199,0.7)] mb-4 oc-depth-1">3</span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Natija va tavsiyani oling</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Tahlil toifasi, kuzatilgan belgilar va ota-onalar uchun amaliy tavsiyalar ro'yxatini ko'ring.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NAMUNA NATIJALAR ===== -->
+  <section id="samples" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 scroll-mt-24">
+    <div class="text-center max-w-2xl mx-auto mb-10" data-reveal>
+      <span class="oc-chip mb-3">Real misollar</span>
+      <h2 class="text-2xl sm:text-[2.1rem] font-extrabold tracking-tight mb-3">Namuna test natijalari</h2>
+      <p class="text-[0.95rem] text-slate-600">AI ko'z sohasini qanday tahlil qilishi va toifalarga ajratishini ko'ring.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <article class="oc-card overflow-hidden flex flex-col group" data-tilt="5" data-reveal data-delay="80">
+        <div class="aspect-[4/3] relative overflow-hidden">
+          <img src="{% static 'samples/sample_1_normal.jpg' %}" alt="Sog'lom ko'z namunasi" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+          <span class="oc-glass absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-emerald-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Yaxshi holat
+          </span>
+        </div>
+        <div class="p-4 flex-1 flex flex-col gap-3">
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+              <span>Namuna 1</span><span class="text-emerald-700">94% ishonch</span>
+            </div>
+            <h3 class="text-[0.98rem] font-bold mb-1">Sog'lom ko'z holati</h3>
+            <p class="text-[0.82rem] text-slate-600 leading-relaxed">Ko'z oq qismi toza va ravshan, yallig'lanish yoki charchoq belgilari aniqlanmadi.</p>
+          </div>
+          <div class="mt-auto pt-3 border-t border-slate-100 text-xs text-slate-500"><span class="font-bold text-slate-700">Tavsiya:</span> 20-20-20 qoidasi va gigiena.</div>
+        </div>
+      </article>
+
+      <article class="oc-card overflow-hidden flex flex-col group" data-tilt="5" data-reveal data-delay="140">
+        <div class="aspect-[4/3] relative overflow-hidden">
+          <img src="{% static 'samples/sample_2_attention.jpg' %}" alt="Kuzatuv talab holat" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+          <span class="oc-glass absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-amber-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Kuzatuv
+          </span>
+        </div>
+        <div class="p-4 flex-1 flex flex-col gap-3">
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+              <span>Namuna 2</span><span class="text-amber-700">88% ishonch</span>
+            </div>
+            <h3 class="text-[0.98rem] font-bold mb-1">Engil qizarish va charchoq</h3>
+            <p class="text-[0.82rem] text-slate-600 leading-relaxed">Engil qizarish kuzatilmoqda, uzoq ekran vaqti ta'siri bo'lishi mumkin.</p>
+          </div>
+          <div class="mt-auto pt-3 border-t border-slate-100 text-xs text-slate-500"><span class="font-bold text-slate-700">Tavsiya:</span> Ekran vaqtini cheklash.</div>
+        </div>
+      </article>
+
+      <article class="oc-card overflow-hidden flex flex-col group" data-tilt="5" data-reveal data-delay="200">
+        <div class="aspect-[4/3] relative overflow-hidden">
+          <img src="{% static 'samples/sample_3_clinic.jpg' %}" alt="Murojaat talab holat" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+          <span class="oc-glass absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-rose-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Murojaat
+          </span>
+        </div>
+        <div class="p-4 flex-1 flex flex-col gap-3">
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+              <span>Namuna 3</span><span class="text-rose-700">91% ishonch</span>
+            </div>
+            <h3 class="text-[0.98rem] font-bold mb-1">Klinik e'tibor holati</h3>
+            <p class="text-[0.82rem] text-slate-600 leading-relaxed">Yallig'lanish, qizarish yoki qovoqda yaqqol o'zgarishlar qayd etildi.</p>
+          </div>
+          <div class="mt-auto pt-3 border-t border-slate-100 text-xs text-slate-500"><span class="font-bold text-slate-700">Tavsiya:</span> Ko'z shifokoriga murojaat.</div>
+        </div>
+      </article>
+
+      <article class="oc-card overflow-hidden flex flex-col group" data-tilt="5" data-reveal data-delay="260">
+        <div class="aspect-[4/3] relative overflow-hidden">
+          <img src="{% static 'samples/sample_4_portrait.jpg' %}" alt="Frontal portret namunasi" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+          <span class="oc-glass absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-emerald-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Yaxshi holat
+          </span>
+        </div>
+        <div class="p-4 flex-1 flex flex-col gap-3">
+          <div>
+            <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+              <span>Namuna 4</span><span class="text-emerald-700">96% ishonch</span>
+            </div>
+            <h3 class="text-[0.98rem] font-bold mb-1">Frontal portret tekshiruvi</h3>
+            <p class="text-[0.82rem] text-slate-600 leading-relaxed">Simmetrik ko'z joylashuvi, tiniq qorachiq va sog'lom holat alomatlari.</p>
+          </div>
+          <div class="mt-auto pt-3 border-t border-slate-100 text-xs text-slate-500"><span class="font-bold text-slate-700">Tavsiya:</span> Rejaviy profilaktika.</div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 3 XIL NATIJA ===== -->
+  <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12">
+    <div class="text-center max-w-2xl mx-auto mb-10" data-reveal>
+      <span class="oc-chip mb-3">Natija toifalari</span>
+      <h2 class="text-2xl sm:text-[2.1rem] font-extrabold tracking-tight mb-3">3 xil aniq natija</h2>
+      <p class="text-[0.95rem] text-slate-600">Har bir tekshiruv quyidagi toifalardan biriga ajratiladi.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="oc-card p-6 overflow-hidden" data-tilt data-reveal data-delay="80">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" aria-hidden="true"></div>
+        <div class="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-emerald-300/30 blur-2xl" aria-hidden="true"></div>
+        <span class="oc-icon text-emerald-600 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Yaxshi holat</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Ko'rinadigan patologik belgilar aniqlanmagan. Profilaktika va gigiena tavsiyalariga amal qilish kifoya.</p>
+      </div>
+
+      <div class="oc-card p-6 overflow-hidden" data-tilt data-reveal data-delay="160">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-300 to-amber-500" aria-hidden="true"></div>
+        <div class="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-amber-200/40 blur-2xl" aria-hidden="true"></div>
+        <span class="oc-icon text-amber-500 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Kuzatuv talab etadi</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Biroz qizarish, quruqlik yoki charchoq alomatlari bor. Ekran vaqtini cheklash va holatni kuzatish kerak.</p>
+      </div>
+
+      <div class="oc-card p-6 overflow-hidden" data-tilt data-reveal data-delay="240">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-400 to-rose-600" aria-hidden="true"></div>
+        <div class="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-rose-200/40 blur-2xl" aria-hidden="true"></div>
+        <span class="oc-icon text-rose-600 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.834-1.96-.834-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg></span>
+        <h3 class="text-[1.05rem] font-bold mb-1.5">Shifokorga murojaat qiling</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">Yaqqol belgilar kuzatilmoqda. Kechiktirmasdan bolalar ko'z shifokori ko'rigidan o'tish tavsiya qilinadi.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AFZALLIKLAR (BENTO) ===== -->
+  <section id="features" class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 scroll-mt-24">
+    <div class="text-center max-w-2xl mx-auto mb-10" data-reveal>
+      <span class="oc-chip mb-3">Nima uchun OptiCare</span>
+      <h2 class="text-2xl sm:text-[2.1rem] font-extrabold tracking-tight mb-3">Asosiy afzalliklar</h2>
+      <p class="text-[0.95rem] text-slate-600">Ota-onalarga qulaylik yaratish maqsadida ishlab chiqilgan.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="oc-card p-5" data-tilt data-reveal data-delay="60">
+        <span class="oc-icon text-emerald-600 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
+        <h3 class="text-[0.98rem] font-bold mb-1">Erta aniqlash</h3>
+        <p class="text-[0.85rem] text-slate-600 leading-relaxed">O'zgarishlarni erta payqab, profilaktik choralar ko'rish imkoniyati.</p>
+      </div>
+      <div class="oc-card p-5" data-tilt data-reveal data-delay="120">
+        <span class="oc-icon text-sky-600 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></span>
+        <h3 class="text-[0.98rem] font-bold mb-1">Oson va qulay</h3>
+        <p class="text-[0.85rem] text-slate-600 leading-relaxed">Oddiy suratga olish orqali bir necha soniyada natija.</p>
+      </div>
+      <div class="oc-card p-5" data-tilt data-reveal data-delay="180">
+        <span class="oc-icon text-violet-600 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg></span>
+        <h3 class="text-[0.98rem] font-bold mb-1">O'zbek tilida</h3>
+        <p class="text-[0.85rem] text-slate-600 leading-relaxed">Natija va tavsiyalar sodda, tushunarli o'zbek tilida.</p>
+      </div>
+      <div class="oc-card p-5" data-tilt data-reveal data-delay="240">
+        <span class="oc-icon text-teal-600 mb-4"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+        <h3 class="text-[0.98rem] font-bold mb-1">Natijalar tarixi</h3>
+        <p class="text-[0.85rem] text-slate-600 leading-relaxed">Tekshiruvlar kabinetda saqlanadi, dinamikani solishtirish mumkin.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TIBBIY ESLATMA ===== -->
+  <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6" data-reveal>
+    <div class="oc-card p-5 flex items-start gap-3.5">
+      <span class="oc-icon text-sky-600 !w-9 !h-9"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+      <p class="text-sm text-slate-700 leading-relaxed font-medium pt-1.5">OptiCare tashxis qo'ymaydi va shifokor ko'rigini almashtirmaydi. Natija shubhali bo'lsa, oftalmologga murojaat qiling.</p>
+    </div>
+  </section>
+
+  <!-- ===== FINAL CTA ===== -->
+  <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 mb-6" data-reveal>
+    <div class="relative overflow-hidden rounded-[1.75rem] p-8 sm:p-14 text-center text-white bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 shadow-[0_40px_80px_-30px_rgba(4,120,87,0.75)]" data-tilt="3">
+      <div class="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_40%)]" aria-hidden="true"></div>
+      <img src="{% static 'img/logo-mark.svg' %}" alt="" aria-hidden="true" class="absolute -left-10 -bottom-12 w-56 opacity-10 brightness-0 invert" />
+      <img src="{% static 'img/logo-mark.svg' %}" alt="" aria-hidden="true" class="absolute -right-8 -top-10 w-44 opacity-10 brightness-0 invert rotate-12" />
+
+      <div class="relative">
+        <h2 class="text-2xl sm:text-[2.2rem] font-extrabold tracking-tight mb-3 leading-tight">Bolangiz ko'z salomatligini hoziroq tekshiring</h2>
+        <p class="text-[0.95rem] sm:text-base text-emerald-50/90 max-w-xl mx-auto mb-7 leading-relaxed">Bir necha daqiqada tahlil natijasini ko'ring va amaliy tavsiyalarni oling.</p>
+        <a href="{% url 'login' %}" id="bottom-demo-btn" class="oc-btn bg-white text-emerald-700 !px-7 !py-3.5 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.45)] hover:bg-emerald-50" data-magnetic>
+            Tizimga kirish
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M13 7l5 5-5 5M6 12h12"/></svg>
           </a>
-        </div>
-
-        <!-- Trust tags -->
-        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2 text-sm text-slate-600 font-medium">
-          <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200">
-            ✓ Smartfon kamerasidan tahlil
-          </span>
-          <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200">
-            ✓ 3 xil tushunarli natija
-          </span>
-          <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200">
-            ✓ To'liq o'zbek tilida
-          </span>
-        </div>
-      </div>
-
-      <!-- Visual side: Flat phone mockup SVG -->
-      <div class="lg:col-span-5 flex justify-center" data-reveal data-delay="150">
-        <div class="w-full max-w-[340px] sm:max-w-[380px] animate-float-slow">
-          <!-- Flat Phone Frame (Solid colors) -->
-          <div class="bg-white rounded-[40px] border-4 border-slate-800 shadow-xl p-4 sm:p-5">
-            <!-- Screen Header -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                </div>
-                <span class="text-base font-extrabold text-slate-900">OptiCare</span>
-              </div>
-              <span class="text-sm font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Tahlil</span>
-            </div>
-
-            <!-- Screen Eye Sample Area -->
-            <div class="mt-4 rounded-2xl bg-slate-100 border border-slate-200 p-4 text-center">
-              <div class="w-20 h-20 mx-auto rounded-full bg-white border-2 border-emerald-600 flex items-center justify-center mb-2">
-                <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-              </div>
-              <p class="text-sm font-semibold text-slate-700">Ko'z sohasi tekshiruvi</p>
-            </div>
-
-            <!-- Screen Result Badge -->
-            <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-slate-500">Natija toifasi</span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-sm font-bold">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  Yaxshi holat
-                </span>
-              </div>
-              <div class="w-full bg-slate-100 rounded-full h-2.5 mt-3">
-                <div class="bg-emerald-600 h-2.5 rounded-full w-[94%]"></div>
-              </div>
-              <div class="flex justify-between text-sm text-slate-500 mt-1.5 font-medium">
-                <span>Ishonch</span>
-                <span class="text-slate-800 font-bold">94%</span>
-              </div>
-            </div>
-
-            <!-- Screen Checklist Mini -->
-            <div class="mt-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div class="flex items-center gap-2 text-sm text-slate-700 font-medium">
-                <span class="text-emerald-600 font-bold">✓</span> Ko'z oq qismi toza
-              </div>
-              <div class="flex items-center gap-2 text-sm text-slate-700 font-medium">
-                <span class="text-emerald-600 font-bold">✓</span> Yallig'lanish kuzatilmadi
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ===== SECTION 3: OPTICARE NIMA? (3 CARDS) ===== -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-    <div class="text-center max-w-3xl mx-auto mb-12" data-reveal>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-        OptiCare nima?
-      </h2>
-      <p class="text-lg text-slate-600">
-        Bolalar ko'z salomatligini o'z vaqtida e'tiborga olish uchun qulay raqamli yordamchi.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Card 1 -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 hover:shadow-md hover:-translate-y-1 transition duration-300 flex flex-col justify-between" data-reveal data-delay="100">
-        <div>
-          <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6">
-            <svg class="w-7 h-7 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-3">Rasm orqali tahlil</h3>
-          <p class="text-lg text-slate-600 leading-relaxed">
-            Telefon kamerasi yoki galereyadagi rasm yetarli. AI ko'z sohasidagi qizarish, quruqlik va o'zgarishlarni tahlil qiladi.
-          </p>
-        </div>
-      </div>
-
-      <!-- Card 2 -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 hover:shadow-md hover:-translate-y-1 transition duration-300 flex flex-col justify-between" data-reveal data-delay="200">
-        <div>
-          <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6">
-            <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-3">3 xil natija</h3>
-          <p class="text-lg text-slate-600 leading-relaxed">
-            Har bir tahlil 3 ta aniq toifaga ajratiladi: Yaxshi holat, Kuzatuv talab etadi yoki Shifokorga murojaat qiling.
-          </p>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 hover:shadow-md hover:-translate-y-1 transition duration-300 flex flex-col justify-between" data-reveal data-delay="300">
-        <div>
-          <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6">
-            <svg class="w-7 h-7 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-3">Tavsiya va tarix</h3>
-          <p class="text-lg text-slate-600 leading-relaxed">
-            Har bir natijaga amaliy tavsiyalar beriladi, barcha tekshiruvlar tarixda saqlanadi va vaqt o'tishi bilan o'zgarishlar kuzatiladi.
-          </p>
-        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== SECTION 4: MUAMMO SECTION (CLEAN WHITE CARD) ===== -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-    <div class="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12" data-reveal>
-      <div class="max-w-3xl mb-10">
-        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-          Nima uchun bolalar ko'z holatini kuzatish muhim?
-        </h2>
-        <p class="text-lg text-slate-600 leading-relaxed">
-          Bugungi kunda bolalar ekrandan faol foydalanishadi. Ko'z charchoqligi, qizarish va ko'rishdagi boshlang'ich o'zgarishlar ko'pincha ota-onalar tomonidan kech seziladi.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
-          <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-800 font-bold mb-4">
-            1
-          </div>
-          <h3 class="text-xl font-semibold text-slate-900 mb-2">Uzoq ekran vaqti</h3>
-          <p class="text-base text-slate-600">
-            Smartfon va kompyuter qarshisida uzoq vaqt o'tirish ko'z quruqligi va charchoqni keltirib chiqaradi.
-          </p>
-        </div>
-
-        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
-          <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-800 font-bold mb-4">
-            2
-          </div>
-          <h3 class="text-xl font-semibold text-slate-900 mb-2">Kech sezilgan alomatlar</h3>
-          <p class="text-base text-slate-600">
-            Kichik yoshdagi bolalar ko'zlaridagi noqulaylikni so'z bilan tushuntirib bera olmasliklari mumkin.
-          </p>
-        </div>
-
-        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
-          <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-800 font-bold mb-4">
-            3
-          </div>
-          <h3 class="text-xl font-semibold text-slate-900 mb-2">Vaqtida chora ko'rish</h3>
-          <p class="text-base text-slate-600">
-            Muntazam foto-tahlil orqali o'zgarishlarni erta aniqlash va zarur bo'lsa shifokorga o'z vaqtida murojaat qilish imkoni yaratiladi.
-          </p>
-        </div>
-      </div>
+  <!-- ===== FOOTER ===== -->
+  <footer class="mt-auto border-t border-slate-200/70 bg-white/60 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      {% include "partials/logo.html" with size=30 %}
+      <p class="text-xs font-medium text-slate-500">© 2026 OptiCare. Barcha huquqlar himoyalangan.</p>
     </div>
-  </section>
-
-  <!-- ===== SECTION 5: QANDAY ISHLAYDI (3 STEP CARDS) ===== -->
-  <section id="how-it-works" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 scroll-mt-24">
-    <div class="text-center max-w-3xl mx-auto mb-12" data-reveal>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-        Qanday ishlaydi?
-      </h2>
-      <p class="text-lg text-slate-600">
-        Atigi 3 oddiy bosqichda ko'z holatini tekshiring va natijani oling.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Step 1 -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 flex flex-col justify-between" data-reveal data-delay="100">
-        <div>
-          <div class="w-14 h-14 rounded-2xl bg-slate-900 text-white font-extrabold text-2xl flex items-center justify-center mb-6">
-            1
-          </div>
-          <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-3">Rasmga oling yoki yuklang</h3>
-          <p class="text-lg text-slate-600 leading-relaxed">
-            Telefon kamerasidan foydalanib bolaning yuz sohasini suratga oling yoki galereyadan tayyor rasmni yuklang.
-          </p>
-        </div>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 flex flex-col justify-between" data-reveal data-delay="200">
-        <div>
-          <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-white font-extrabold text-2xl flex items-center justify-center mb-6">
-            2
-          </div>
-          <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-3">AI ko'z sohasini tahlil qiladi</h3>
-          <p class="text-lg text-slate-600 leading-relaxed">
-            Sun'iy intellekt qizarish, quruqlik, qovoq va ko'z holatini, shish hamda yoshlanishni ko'rib chiqadi.
-          </p>
-        </div>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 flex flex-col justify-between" data-reveal data-delay="300">
-        <div>
-          <div class="w-14 h-14 rounded-2xl bg-sky-600 text-white font-extrabold text-2xl flex items-center justify-center mb-6">
-            3
-          </div>
-          <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-3">Natija va tavsiyani oling</h3>
-          <p class="text-lg text-slate-600 leading-relaxed">
-            Tahlil toifasi, kuzatilgan belgilar va ota-onalar uchun amaliy profilaktik tavsiyalar ro'yxatini ko'ring.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION: NAMUNA TEST NATIJALARI (SHOWCASE SECTION) ===== -->
-  <section id="samples" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 scroll-mt-20">
-    <div class="text-center max-w-3xl mx-auto mb-12" data-reveal>
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold mb-3">
-        👁️ Real misollar
-      </div>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-        Namuna test natijalari
-      </h2>
-      <p class="text-lg text-slate-600">
-        OptiCare sun'iy intellekti ko'z sohasini qanday tahlil qilishi va toifalarga ajratishini ko'ring.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-      <!-- Sample 1: Normal -->
-      <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col" data-reveal data-delay="100">
-        <div class="aspect-4/3 bg-slate-100 relative overflow-hidden">
-          <img src="{% static 'samples/sample_1_normal.jpg' %}" alt="Sog'lom ko'z namunasi" class="w-full h-full object-cover" />
-          <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800 shadow-xs">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Yaxshi holat
-          </span>
-        </div>
-        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <div class="flex items-center justify-between text-sm text-slate-500 mb-1 font-medium">
-              <span>Namuna 1</span>
-              <span class="text-emerald-700 font-bold">94% ishonch</span>
-            </div>
-            <h4 class="text-lg font-bold text-slate-900 mb-1.5">Sog'lom ko'z holati</h4>
-            <p class="text-base text-slate-600 leading-relaxed">
-              Ko'z oq qismi toza va ravshan, ko'rinadigan yallig'lanish yoki charchoq belgilari aniqlanmadi.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-100 text-sm text-slate-500">
-            <span class="font-semibold text-slate-700">Tavsiya:</span> 20-20-20 qoidasi va muntazam gigiena.
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 2: Attention -->
-      <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col" data-reveal data-delay="150">
-        <div class="aspect-4/3 bg-slate-100 relative overflow-hidden">
-          <img src="{% static 'samples/sample_2_attention.jpg' %}" alt="Kuzatuv talab holat" class="w-full h-full object-cover" />
-          <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-800 shadow-xs">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            Kuzatuv
-          </span>
-        </div>
-        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <div class="flex items-center justify-between text-sm text-slate-500 mb-1 font-medium">
-              <span>Namuna 2</span>
-              <span class="text-amber-700 font-bold">88% ishonch</span>
-            </div>
-            <h4 class="text-lg font-bold text-slate-900 mb-1.5">Engil qizarish va charchoq</h4>
-            <p class="text-base text-slate-600 leading-relaxed">
-              Konyunktivada engil taranglik va qizarish kuzatilmoqda, uzoq ekran vaqti ta'siri bo'lishi mumkin.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-100 text-sm text-slate-500">
-            <span class="font-semibold text-slate-700">Tavsiya:</span> Ekran vaqtini cheklash va dam olish.
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 3: Consult -->
-      <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col" data-reveal data-delay="200">
-        <div class="aspect-4/3 bg-slate-100 relative overflow-hidden">
-          <img src="{% static 'samples/sample_3_clinic.jpg' %}" alt="Murojaat talab holat" class="w-full h-full object-cover" />
-          <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold bg-rose-100 text-rose-800 shadow-xs">
-            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-            Murojaat
-          </span>
-        </div>
-        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <div class="flex items-center justify-between text-sm text-slate-500 mb-1 font-medium">
-              <span>Namuna 3</span>
-              <span class="text-rose-700 font-bold">91% ishonch</span>
-            </div>
-            <h4 class="text-lg font-bold text-slate-900 mb-1.5">Klinik e'tibor holati</h4>
-            <p class="text-base text-slate-600 leading-relaxed">
-              Yallig'lanish, qizarish yoki ko'z qovog'ida yaqqol o'zgarishlar mavjudligi qayd etildi.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-100 text-sm text-slate-500">
-            <span class="font-semibold text-slate-700">Tavsiya:</span> Bolalar ko'z shifokoriga murojaat qilish.
-          </div>
-        </div>
-      </div>
-
-      <!-- Sample 4: Portrait Normal -->
-      <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col" data-reveal data-delay="250">
-        <div class="aspect-4/3 bg-slate-100 relative overflow-hidden">
-          <img src="{% static 'samples/sample_4_portrait.jpg' %}" alt="Frontal portret namunasi" class="w-full h-full object-cover" />
-          <span class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800 shadow-xs">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Yaxshi holat
-          </span>
-        </div>
-        <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <div class="flex items-center justify-between text-sm text-slate-500 mb-1 font-medium">
-              <span>Namuna 4</span>
-              <span class="text-emerald-700 font-bold">96% ishonch</span>
-            </div>
-            <h4 class="text-lg font-bold text-slate-900 mb-1.5">Frontal portret tekshiruvi</h4>
-            <p class="text-base text-slate-600 leading-relaxed">
-              Simmetrik ko'z joylashuvi, tiniq qorachiq va sog'lom ko'z holati alomatlari qayd etildi.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-100 text-sm text-slate-500">
-            <span class="font-semibold text-slate-700">Tavsiya:</span> Rejaviy profilaktika va sog'lom odatlar.
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ===== SECTION 6: 3 XIL NATIJA ===== -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-    <div class="text-center max-w-3xl mx-auto mb-12" data-reveal>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-        3 xil aniq natija
-      </h2>
-      <p class="text-lg text-slate-600">
-        Har bir tekshiruv quyidagi toifalardan biriga ajratiladi.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Normal -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 hover:shadow-md transition duration-300" data-reveal data-delay="100">
-        <div class="flex items-center justify-between mb-6">
-          <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
-            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-sm font-semibold">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Yaxshi holat
-          </span>
-        </div>
-        <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">Yaxshi holat</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Ko'rinadigan patologik belgilar aniqlanmagan. Profilaktika va gigiena tavsiyalariga amal qilish kifoya.
-        </p>
-      </div>
-
-      <!-- Attention -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 hover:shadow-md transition duration-300" data-reveal data-delay="200">
-        <div class="flex items-center justify-between mb-6">
-          <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
-            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.834-1.96-.834-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-            </svg>
-          </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-semibold">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            Kuzatuv talab etadi
-          </span>
-        </div>
-        <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">Kuzatuv talab etadi</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Biroz qizarish, quruqlik yoki ko'z charchoqligi alomatlari bor. Ekran vaqtini cheklash va holatni kuzatish kerak.
-        </p>
-      </div>
-
-      <!-- Consult -->
-      <div class="bg-white rounded-3xl border border-slate-200 p-8 hover:shadow-md transition duration-300" data-reveal data-delay="300">
-        <div class="flex items-center justify-between mb-6">
-          <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
-            <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.834-1.96-.834-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-            </svg>
-          </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-sm font-semibold">
-            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-            Shifokorga murojaat
-          </span>
-        </div>
-        <h3 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">Shifokorga murojaat qiling</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Yaqqol belgilar kuzatilmoqda. Kechiktirmasdan bolalar ko'z shifokori ko'rigidan o'tish tavsiya qilinadi.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 7: AFZALLIKLAR (4 CARDS) ===== -->
-  <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 scroll-mt-24">
-    <div class="text-center max-w-3xl mx-auto mb-12" data-reveal>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
-        Asosiy afzalliklar
-      </h2>
-      <p class="text-lg text-slate-600">
-        OptiCare ota-onalarga qulaylik yaratish maqsadida ishlab chiqilgan.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-white rounded-3xl border border-slate-200 p-6" data-reveal data-delay="100">
-        <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
-          <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold text-slate-900 mb-2">Erta aniqlash</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Ko'z holatidagi o'zgarishlarni erta payqash va profilaktik choralar ko'rish imkoniyati.
-        </p>
-      </div>
-
-      <div class="bg-white rounded-3xl border border-slate-200 p-6" data-reveal data-delay="150">
-        <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
-          <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold text-slate-900 mb-2">Oson va qulay</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Telefon kamerasidan oddiy suratga olish orqali bir necha soniyada natija ko'rsatiladi.
-        </p>
-      </div>
-
-      <div class="bg-white rounded-3xl border border-slate-200 p-6" data-reveal data-delay="200">
-        <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
-          <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold text-slate-900 mb-2">O'zbek tilida</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Barcha natijalar va amaliy tavsiyalar ota-onalar tushunadigan sodda o'zbek tilida beriladi.
-        </p>
-      </div>
-
-      <div class="bg-white rounded-3xl border border-slate-200 p-6" data-reveal data-delay="250">
-        <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
-          <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold text-slate-900 mb-2">Natijalar tarixi</h3>
-        <p class="text-base text-slate-600 leading-relaxed">
-          Barcha tekshiruvlar shaxsiy kabinetda saqlanadi va dinamikani solishtirish mumkin.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 8: MEDICAL NOTE CARD ===== -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-reveal>
-    <div class="bg-white rounded-3xl border border-slate-200 p-7 sm:p-9 flex items-start gap-4">
-      <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600">
-        <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-      </div>
-      <div>
-        <p class="text-base sm:text-lg text-slate-700 leading-relaxed font-medium">
-          OptiCare tashxis qo'ymaydi va shifokor ko'rigini almashtirmaydi. Natija shubhali bo'lsa, oftalmologga murojaat qiling.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 9: FINAL CTA CARD ===== -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-10" data-reveal>
-    <div class="bg-white rounded-3xl border border-slate-200 p-8 sm:p-14 text-center">
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-        Bolangiz ko'z salomatligini hoziroq tekshiring
-      </h2>
-      <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
-        OptiCare xizmati orqali bir necha daqiqada tahlil natijasini ko'ring va amaliy tavsiyalarni oling.
-      </p>
-      <form method="post" action="{% url 'demo_login' %}" class="inline-block">
-        {% csrf_token %}
-        <button type="submit" id="bottom-demo-btn"
-          class="inline-flex items-center justify-center gap-3 px-9 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95 min-h-[56px]">
-          Demo bilan kirish →
-        </button>
-      </form>
-    </div>
-  </section>
-
-  <!-- ===== MINIMAL FOOTER ===== -->
-  <footer class="mt-auto py-8 px-4 border-t border-slate-200 bg-white text-center text-sm font-medium text-slate-500">
-    <p>© 2026 OptiCare. Barcha huquqlar himoyalangan.</p>
   </footer>
 
-  <!-- Motion JS -->
   <script src="{% static 'js/motion.js' %}"></script>
 </body>
 </html>

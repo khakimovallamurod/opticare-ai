@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Bosh sahifa{% endblock %}
 {% block page_title %}Bosh sahifa{% endblock %}
@@ -9,7 +10,7 @@
   <!-- Greeting -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-reveal>
     <div>
-      <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Salom, {{ request.user.first_name }}! 👋</h2>
+      <h2 class="text-lg sm:text-lg font-bold text-slate-900 tracking-tight">Salom, {{ request.user.first_name }}! 👋</h2>
       <p class="text-slate-500 mt-1 text-sm sm:text-base">Bolangizning ko'z salomatligini muntazam kuzatib borish — eng muhim profilaktikadir.</p>
     </div>
   </div>
@@ -18,9 +19,9 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
     <!-- Card 1: Jami -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="50">
+    <div class="oc-card p-5 flex flex-col justify-between" data-tilt="" data-reveal data-delay="50">
       <div class="flex items-center gap-4 mb-4">
-        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+        <div class="oc-icon">
           <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -28,13 +29,13 @@
         </div>
         <span class="text-sm font-semibold text-slate-600">Jami tekshiruvlar</span>
       </div>
-      <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight" data-countup="{{ stats.total }}">{{ stats.total }}</p>
+      <p class="text-2xl sm:text-[1.9rem] font-extrabold text-slate-900 tracking-tight" data-countup="{{ stats.total }}">{{ stats.total }}</p>
     </div>
 
     <!-- Card 2: Oxirgi natija -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="100">
+    <div class="oc-card p-5 flex flex-col justify-between" data-tilt="" data-reveal data-delay="100">
       <div class="flex items-center gap-4 mb-4">
-        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+        <div class="oc-icon">
           <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -52,9 +53,9 @@
     </div>
 
     <!-- Card 3: Shu oydagi -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="150">
+    <div class="oc-card p-5 flex flex-col justify-between" data-tilt="" data-reveal data-delay="150">
       <div class="flex items-center gap-4 mb-4">
-        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+        <div class="oc-icon">
           <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -62,13 +63,13 @@
         </div>
         <span class="text-sm font-semibold text-slate-600">Shu oydagi</span>
       </div>
-      <p class="text-3xl sm:text-4xl font-extrabold text-sky-600 tracking-tight" data-countup="{{ stats.this_month }}">{{ stats.this_month }}</p>
+      <p class="text-2xl sm:text-[1.9rem] font-extrabold text-sky-600 tracking-tight" data-countup="{{ stats.this_month }}">{{ stats.this_month }}</p>
     </div>
 
     <!-- Card 4: Murojaat tavsiya -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition duration-300" data-reveal data-delay="200">
+    <div class="oc-card p-5 flex flex-col justify-between" data-tilt="" data-reveal data-delay="200">
       <div class="flex items-center gap-4 mb-4">
-        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+        <div class="oc-icon">
           <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.834-1.96-.834-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/>
@@ -76,34 +77,43 @@
         </div>
         <span class="text-sm font-semibold text-slate-600">Murojaat tavsiya</span>
       </div>
-      <p class="text-3xl sm:text-4xl font-extrabold text-rose-600 tracking-tight" data-countup="{{ stats.consult_count }}">{{ stats.consult_count }}</p>
+      <p class="text-2xl sm:text-[1.9rem] font-extrabold text-rose-600 tracking-tight" data-countup="{{ stats.consult_count }}">{{ stats.consult_count }}</p>
     </div>
 
   </div>
 
-  <!-- CTA card: White card with slate-200 border -->
-  <div class="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6" data-reveal>
-    <div class="space-y-2">
-      <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Yangi tekshiruv boshlash</h3>
-      <p class="text-slate-600 text-sm sm:text-base max-w-2xl leading-relaxed">
-        Bolangizning ko'z sohasini sun'iy intellekt yordamida tahlil qiling va tavsiyalar oling.
-      </p>
+  <!-- CTA banner -->
+  <div class="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 text-white shadow-[0_30px_60px_-28px_rgba(4,120,87,0.8)]" data-tilt="3" data-reveal>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.35),transparent_45%)]" aria-hidden="true"></div>
+    <img src="{% static 'img/logo-mark.svg' %}" alt="" aria-hidden="true" class="absolute -left-8 -bottom-10 w-44 opacity-10 brightness-0 invert" />
+    <div class="relative grid grid-cols-1 md:grid-cols-5 items-center">
+      <div class="md:col-span-3 p-6 sm:p-8 space-y-4">
+        <div class="space-y-1.5">
+          <h3 class="text-xl sm:text-2xl font-extrabold tracking-tight">Yangi tekshiruv boshlash</h3>
+          <p class="text-emerald-50/90 text-sm sm:text-[0.95rem] max-w-md leading-relaxed">
+            Bolangizning ko'z sohasini sun'iy intellekt yordamida tahlil qiling va tavsiyalar oling.
+          </p>
+        </div>
+        <a href="{% url 'new_scan' %}" class="oc-btn bg-white text-emerald-700 hover:bg-emerald-50 shadow-[0_12px_24px_-12px_rgba(0,0,0,0.45)]"
+          id="dashboard-new-scan-btn" data-magnetic>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+          </svg>
+          Tekshiruvni boshlash
+        </a>
+      </div>
+      <div class="hidden md:block md:col-span-2 self-stretch relative">
+        <img src="{% static 'img/hero-child.webp' %}" alt="" aria-hidden="true"
+          class="absolute inset-y-3 right-3 h-[calc(100%-1.5rem)] w-[calc(100%-0.75rem)] object-cover object-[70%_center] rounded-2xl ring-1 ring-white/30 shadow-2xl" />
+      </div>
     </div>
-    <a href="{% url 'new_scan' %}"
-      class="flex-shrink-0 inline-flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white text-base font-semibold rounded-2xl transition-all shadow-sm hover:-translate-y-0.5 active:scale-95 min-h-[56px]"
-      id="dashboard-new-scan-btn">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-      </svg>
-      Tekshiruvni boshlash
-    </a>
   </div>
 
   <!-- Charts -->
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
 
     <!-- Doughnut: class distribution (5 cols) -->
-    <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between" data-reveal>
+    <div class="lg:col-span-5 oc-card p-5 sm:p-6 flex flex-col justify-between" data-reveal>
       <div>
         <h3 class="text-lg font-bold text-slate-900 mb-1">Natijalar taqsimoti</h3>
         <p class="text-sm text-slate-500 mb-6">Barcha o'tkazilgan tekshiruv natijalarining toifalar bo'yicha ulushi</p>
@@ -120,7 +130,7 @@
     </div>
 
     <!-- Bar: monthly scans (7 cols) -->
-    <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between" data-reveal>
+    <div class="lg:col-span-7 oc-card p-5 sm:p-6 flex flex-col justify-between" data-reveal>
       <div>
         <h3 class="text-lg font-bold text-slate-900 mb-1">Oylik tekshiruvlar dinamikasi</h3>
         <p class="text-sm text-slate-500 mb-6">Oxirgi 6 oydagi tekshiruvlar soni</p>
@@ -133,10 +143,10 @@
   </div>
 
   <!-- Recent scans -->
-  <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden" data-reveal>
+  <div class="oc-card overflow-hidden" data-reveal>
     <div class="flex items-center justify-between px-7 sm:px-8 py-6 border-b border-slate-100">
       <div>
-        <h3 class="text-lg sm:text-xl font-bold text-slate-900">So'nggi tekshiruvlar</h3>
+        <h3 class="text-lg sm:text-lg font-bold text-slate-900">So'nggi tekshiruvlar</h3>
         <p class="text-sm text-slate-500 mt-1">Oxirgi 5 ta amalga oshirilgan tahlil natijalari</p>
       </div>
       <a href="{% url 'scan_history' %}" class="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors">
@@ -182,7 +192,7 @@
     {% else %}
     <div class="text-center py-12 px-4">
       <p class="text-sm sm:text-base text-slate-500">Hozircha tekshiruvlar tarixi toza.</p>
-      <a href="{% url 'new_scan' %}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm sm:text-base">
+      <a href="{% url 'new_scan' %}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 oc-btn-primary text-white rounded-xl font-semibold text-sm sm:text-base">
         Birinchi tekshiruvni boshlash
       </a>
     </div>
@@ -219,11 +229,11 @@ if (classCtx) {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { font: { family: 'Inter', size: 13, weight: '500' }, padding: 18 },
+          labels: { font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13, weight: '500' }, padding: 18 },
         },
         tooltip: {
-          titleFont: { family: 'Inter', size: 14 },
-          bodyFont: { family: 'Inter', size: 13 },
+          titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 14 },
+          bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 },
         },
       },
       cutout: '65%',
@@ -257,18 +267,18 @@ if (monthlyCtx) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          titleFont: { family: 'Inter', size: 14 },
-          bodyFont: { family: 'Inter', size: 13 },
+          titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 14 },
+          bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 },
         },
       },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { stepSize: 1, font: { family: 'Inter', size: 13 } },
+          ticks: { stepSize: 1, font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 } },
           grid: { color: '#f1f5f9' },
         },
         x: {
-          ticks: { font: { family: 'Inter', size: 13 } },
+          ticks: { font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 } },
           grid: { display: false },
         },
       },

@@ -97,9 +97,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Auth
-LOGIN_URL = "/"
+LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
+
+# Demo account (created by `manage.py seed_demo`)
+DEMO_USERNAME = os.getenv("DEMO_USERNAME", "admin2026")
+DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "123456")
 
 # Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")

@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 class NewScanView(LoginRequiredMixin, View):
     """Multi-step single-page new scan view."""
 
-    login_url = "/"
     template_name = "scans/new_scan.html"
 
     def get(self, request):
@@ -120,7 +119,6 @@ class NewScanView(LoginRequiredMixin, View):
 class ScanDetailView(LoginRequiredMixin, View):
     """Result page for a single scan."""
 
-    login_url = "/"
     template_name = "scans/scan_detail.html"
 
     def get(self, request, pk):
@@ -135,7 +133,6 @@ class ScanDetailView(LoginRequiredMixin, View):
 class ScanHistoryView(LoginRequiredMixin, View):
     """Paginated scan history with class filter."""
 
-    login_url = "/"
     template_name = "scans/history.html"
 
     def get(self, request):
@@ -160,7 +157,6 @@ class ScanHistoryView(LoginRequiredMixin, View):
 class ScanDeleteView(LoginRequiredMixin, View):
     """Delete a scan record and its image file."""
 
-    login_url = "/"
 
     def post(self, request, pk):
         scan = get_object_or_404(Scan, pk=pk, user=request.user)

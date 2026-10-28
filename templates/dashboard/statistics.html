@@ -7,35 +7,35 @@
 <div class="w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 py-8 space-y-8" data-reveal>
 
   <div>
-    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Batafsil statistika</h2>
-    <p class="text-slate-600 mt-1 text-base sm:text-lg">O'tkazilgan tekshiruvlarning tahliliy taqsimoti va ko'rsatkichlari</p>
+    <h2 class="text-2xl sm:text-[1.9rem] font-extrabold text-slate-900 tracking-tight">Batafsil statistika</h2>
+    <p class="text-slate-600 mt-1 text-sm sm:text-base">O'tkazilgan tekshiruvlarning tahliliy taqsimoti va ko'rsatkichlari</p>
   </div>
 
   <!-- Summary stat cards -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
-      <p class="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight" data-countup="{{ stats.total }}">{{ stats.total }}</p>
-      <p class="text-base font-semibold text-slate-600 mt-2">Jami tekshiruvlar</p>
+    <div class="oc-card p-5 text-center" data-tilt>
+      <p class="text-3xl lg:text-[2.4rem] font-black text-slate-900 tracking-tight" data-countup="{{ stats.total }}">{{ stats.total }}</p>
+      <p class="text-sm font-semibold text-slate-600 mt-1.5">Jami tekshiruvlar</p>
     </div>
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
-      <p class="text-4xl lg:text-5xl font-black text-emerald-600 tracking-tight" data-countup="{{ stats.class_counts.normal }}">{{ stats.class_counts.normal }}</p>
-      <p class="text-base font-semibold text-slate-600 mt-2">Yaxshi holat</p>
+    <div class="oc-card p-5 text-center" data-tilt>
+      <p class="text-3xl lg:text-[2.4rem] font-black text-emerald-600 tracking-tight" data-countup="{{ stats.class_counts.normal }}">{{ stats.class_counts.normal }}</p>
+      <p class="text-sm font-semibold text-slate-600 mt-1.5">Yaxshi holat</p>
     </div>
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
-      <p class="text-4xl lg:text-5xl font-black text-amber-500 tracking-tight" data-countup="{{ stats.class_counts.attention }}">{{ stats.class_counts.attention }}</p>
-      <p class="text-base font-semibold text-slate-600 mt-2">Kuzatuv</p>
+    <div class="oc-card p-5 text-center" data-tilt>
+      <p class="text-3xl lg:text-[2.4rem] font-black text-amber-500 tracking-tight" data-countup="{{ stats.class_counts.attention }}">{{ stats.class_counts.attention }}</p>
+      <p class="text-sm font-semibold text-slate-600 mt-1.5">Kuzatuv</p>
     </div>
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 text-center">
-      <p class="text-4xl lg:text-5xl font-black text-rose-600 tracking-tight" data-countup="{{ stats.class_counts.consult }}">{{ stats.class_counts.consult }}</p>
-      <p class="text-base font-semibold text-slate-600 mt-2">Murojaat tavsiya</p>
+    <div class="oc-card p-5 text-center" data-tilt>
+      <p class="text-3xl lg:text-[2.4rem] font-black text-rose-600 tracking-tight" data-countup="{{ stats.class_counts.consult }}">{{ stats.class_counts.consult }}</p>
+      <p class="text-sm font-semibold text-slate-600 mt-1.5">Murojaat tavsiya</p>
     </div>
   </div>
 
   <!-- Charts row -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- Doughnut -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between">
-      <h3 class="text-xl font-bold text-slate-900 mb-4">Natijalar taqsimoti</h3>
+    <div class="oc-card p-5 sm:p-6 flex flex-col justify-between">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Natijalar taqsimoti</h3>
       {% if stats.total > 0 %}
       <div class="flex justify-center mb-6">
         <div class="w-60 h-60">
@@ -81,9 +81,9 @@
     </div>
 
     <!-- Monthly bar -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8 flex flex-col justify-between">
+    <div class="oc-card p-5 sm:p-6 flex flex-col justify-between">
       <div>
-        <h3 class="text-xl font-bold text-slate-900 mb-1">Oylik trend (so'nggi 6 oy)</h3>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Oylik trend (so'nggi 6 oy)</h3>
         <p class="text-sm text-slate-500 mb-6">Oylar bo'yicha tahlillar dinamikasi</p>
       </div>
       <div class="h-72">
@@ -93,8 +93,8 @@
   </div>
 
   <!-- Additional metrics -->
-  <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-7 sm:p-8">
-    <h3 class="text-xl font-bold text-slate-900 mb-6">Qo'shimcha ko'rsatkichlar</h3>
+  <div class="oc-card p-5 sm:p-6">
+    <h3 class="text-lg font-bold text-slate-900 mb-6">Qo'shimcha ko'rsatkichlar</h3>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
       <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100">
         <p class="text-3xl font-extrabold text-slate-900" data-countup="{{ stats.avg_confidence }}">{{ stats.avg_confidence }}%</p>
@@ -139,8 +139,8 @@ if (classCtx) {
         easing: 'easeOutQuart',
       },
       plugins: {
-        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 13, weight: '500' }, padding: 18 } },
-        tooltip: { titleFont: { family: 'Inter', size: 14 }, bodyFont: { family: 'Inter', size: 13 } },
+        legend: { position: 'bottom', labels: { font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13, weight: '500' }, padding: 18 } },
+        tooltip: { titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 14 }, bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 } },
       },
       cutout: '65%',
     },
@@ -172,11 +172,11 @@ if (monthlyCtx) {
       },
       plugins: {
         legend: { display: false },
-        tooltip: { titleFont: { family: 'Inter', size: 14 }, bodyFont: { family: 'Inter', size: 13 } },
+        tooltip: { titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 14 }, bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 } },
       },
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter', size: 13 } }, grid: { color: '#f1f5f9' } },
-        x: { ticks: { font: { family: 'Inter', size: 13 } }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 } }, grid: { color: '#f1f5f9' } },
+        x: { ticks: { font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 13 } }, grid: { display: false } },
       },
     },
   });

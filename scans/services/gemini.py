@@ -18,57 +18,168 @@ except ImportError:  # pragma: no cover
     genai_types = None  # type: ignore[assignment]
 
 # ---------------------------------------------------------------------------
-# Prompt (edit this constant to adjust AI behaviour)
+# Urgency levels (tavsiya darajasi). Each result class allows a range of levels;
+# the final level is never lower than the class minimum (safety first).
 # ---------------------------------------------------------------------------
-SYSTEM_PROMPT = """Siz bolalar ko'z salomatligini tahlil qilish bo'yicha AI yordamchisiz (OptiCare tizimi).
-Muhim: Siz shifokor emassiz va hech qachon aniq tibbiy tashxis qo'ymaysiz.
-Hech qachon kasallik nomini aniq haqiqat sifatida aytmang.
-Noaniqlik bo'lsa, har doim yuqori darajadagi e'tibor sinfini tanlang (xavfsizlik printsipi).
-Faqat Uzbek (lotin) tilida javob bering.
-Faqat JSON formatida javob bering – boshqa matn yo'q.
+URGENCY_LEVELS = {
+    "past": 1,
+    "orta": 2,
+    "yuqori": 3,
+    "shoshilinch": 4,
+}
+CLASS_MIN_URGENCY = {"normal": "past", "attention": "orta", "consult": "yuqori"}
+URGENCY_TO_CLASS = {"past": "normal", "orta": "attention", "yuqori": "consult", "shoshilinch": "consult"}
+DEFAULT_DOCTOR_VISIT = {
+    "past": "Rejali profilaktik ko'rik — yiliga 1 marta",
+    "orta": "Holatni 3–7 kun kuzating; yaxshilanmasa 1–2 hafta ichida oftalmologga boring",
+    "yuqori": "2–3 kun ichida bolalar oftalmologiga uchrashing",
+    "shoshilinch": "Bugunoq (24 soat ichida) shifokorga yoki tez yordamga murojaat qiling",
+}
+RECOMMENDATION_PRIORITIES = ("muhim", "tavsiya", "qoshimcha")
+
+# ---------------------------------------------------------------------------
+# Prompt (edit these constants to adjust AI behaviour)
+# ---------------------------------------------------------------------------
+SYSTEM_PROMPT = """Siz OptiCare tizimining bolalar ko'z sohasini vizual baholovchi AI yordamchisisiz.
+Vazifangiz — ota-onaga rasmda KO'RINADIGAN belgilar asosida tushunarli, ehtiyotkor va amaliy yo'l-yo'riq berish.
+
+Qat'iy qoidalar:
+- Siz shifokor emassiz: tashxis qo'ymang, kasallik nomini haqiqat sifatida aytmang, dori yoki tomchi nomini tavsiya qilmang.
+- Faqat rasmda ko'rinib turgan narsani yozing; taxmin qilmang, ko'rinmagan belgini o'ylab topmang.
+- Noaniqlik bo'lsa — yuqoriroq e'tibor sinfi va yuqoriroq tavsiya darajasini tanlang (xavfsizlik printsipi).
+- Javob faqat o'zbek tilida (lotin yozuvi), sodda va ota-ona tushunadigan tilda bo'lsin.
+- Faqat bitta JSON obyekt qaytaring — undan oldin yoki keyin hech qanday matn bo'lmasin.
 """
 
-ANALYSIS_PROMPT_TEMPLATE = """Quyidagi rasm – bola yuzining yoki ko'z sohasining fotosuratidir.
+ANALYSIS_PROMPT_TEMPLATE = """Rasm — bola yuzi yoki ko'z sohasining fotosurati.
 {age_info}
 
-VAZIFA:
-1. Rasmda inson yuzi yoki ko'z sohasini aniqlang.
-2. Agar rasm yaroqsiz bo'lsa (yuz/ko'z ko'rinmasa, juda xira/qorong'i bo'lsa), "valid": false qaytaring.
-3. Agar rasm yaroqli bo'lsa, quyidagi JSON sxemasiga ko'ra tahlil qiling:
+1-QADAM. RASM SIFATINI TEKSHIRING
+Quyidagi holatlarda "valid": false qaytaring va "invalid_reason"da aniq sababni va qanday qayta suratga olishni yozing:
+- rasmda inson yuzi/ko'z umuman yo'q;
+- ko'zlar yumuq, qo'l, soch yoki ko'zoynak yaltirashi bilan to'silgan;
+- rasm juda xira, qorong'i, haddan tashqari yorug' yoki ko'z sohasi juda kichik.
+Rasm sifati past, lekin ko'z sohasi baholashga yetarli bo'lsa — tahlilni davom ettiring, "confidence"ni pasaytiring.
 
-JSON sxemasi:
+2-QADAM. HAR BIR KO'ZNI TIZIMLI KO'RIB CHIQING (o'ng va chap ko'z alohida)
+- Ko'z oq qismi (sklera, konyunktiva): qizarish, tomirlar ko'rinishi, sarg'ayish, qon quyilishi.
+- Qovoqlar: shish, qizarish, qobiq/po'stloq, arpa ko'z kabi bo'rtma, qovoq osilishi (ptoz).
+- Ajralma va yoshlanish: yiring, shilliq, ko'p yosh oqishi.
+- Shox parda va qorachiq: xiralik, loyqalik, oq dog', qorachiqda oq yoki kulrang aks (leykokoriya), qorachiqlar o'lchami farqi.
+- Ko'zlar simmetriyasi va qarash yo'nalishi: bir ko'z boshqa tomonga qarashi (g'ilaylik shubhasi).
+- Shikast belgilari: tirnalish, ko'kargan joy, begona jism.
+
+3-QADAM. NATIJA SINFI ("class")
+- "normal": ko'rinadigan o'zgarish yo'q.
+- "attention": engil, xavfsiz ko'rinadigan belgilar — engil qizarish, charchoq, quruqlik, engil shish yoki yoshlanish.
+- "consult": yaqqol belgilar — kuchli qizarish, sezilarli shish, yiringli ajralma, ptoz, g'ilaylik shubhasi, shox parda xiraligi, shikast.
+
+4-QADAM. TAVSIYA DARAJASI ("urgency") — ANIQ VA BIR XIL BELGILANG
+- "past"        — 1-daraja. Faqat "normal" sinf. Profilaktika yetarli, yiliga 1 marta rejali ko'rik.
+- "orta"        — 2-daraja. Faqat "attention" sinf. Uyda kuzatish, 1–2 hafta ichida yaxshilanmasa shifokorga.
+- "yuqori"      — 3-daraja. "consult" sinf. 2–3 kun ichida bolalar oftalmologiga.
+- "shoshilinch" — 4-daraja. "consult" sinf + xavfli belgi: qorachiqda oq aks, ko'z shikasti/begona jism,
+                  ko'z atrofida kuchli shish va qizarish, ko'p yiringli ajralma, to'satdan paydo bo'lgan g'ilaylik yoki ptoz.
+                  Bugunoq (24 soat ichida) shifokorga.
+"urgency_reason"da aynan qaysi kuzatilgan belgi sababli shu daraja tanlanganini 1 jumlada yozing.
+"doctor_visit"da shifokorga qachon borish kerakligini aniq muddat bilan yozing (masalan: "2–3 kun ichida bolalar oftalmologiga").
+
+5-QADAM. TAVSIYALAR ("recommendations") — 3 tadan 6 tagacha
+Har bir tavsiya obyekt: {{"text": "...", "priority": "muhim" | "tavsiya" | "qoshimcha"}}
+- "muhim"     — darhol bajarilishi kerak bo'lgan qadam (2–4 daraja uchun birinchi tavsiya doim shifokor bilan bog'liq va muddatli bo'lsin).
+- "tavsiya"   — kundalik parvarish va kuzatish bo'yicha amaliy qadam.
+- "qoshimcha" — profilaktik maslahat (ekran vaqti, 20-20-20 qoidasi, yorug'lik, uyqu, ovqatlanish, gigiena).
+Tavsiyalar aniq bo'lsin: nima qilish, qancha vaqt, nimaga e'tibor berish. Umumiy gaplardan qoching.
+Muhimlik bo'yicha tartiblang: avval "muhim", keyin "tavsiya", oxirida "qoshimcha".
+Holat yomonlashsa nima qilishni ham yozing (masalan: "Og'riq, ko'rish xiralashishi yoki shish kuchaysa — zudlik bilan shifokorga").
+
+6-QADAM. ISHONCH ("confidence")
+0.0–1.0. Rasm sifati, yorug'lik va ikkala ko'z ko'rinishiga qarab baholang. Rasm o'rtacha bo'lsa 0.75 dan oshirmang.
+
+JAVOB SXEMASI (faqat shu JSON):
 {{
-  "valid": true yoki false,
-  "invalid_reason": "agar valid=false bo'lsa, o'zbek tilida sabab",
+  "valid": true,
+  "invalid_reason": "",
   "class": "normal" | "attention" | "consult",
-  "confidence": 0.0 dan 1.0 gacha float son,
-  "observations": ["ko'rilgan belgi 1", "belgi 2", ...],
-  "recommendations": ["tavsiya 1", "tavsiya 2", ...],
-  "summary": "ota-onalar uchun 1-2 jumlali qisqacha xulosa"
+  "urgency": "past" | "orta" | "yuqori" | "shoshilinch",
+  "urgency_reason": "tanlangan daraja sababi, 1 jumla",
+  "doctor_visit": "shifokorga borish muddati",
+  "confidence": 0.0,
+  "observations": ["o'ng ko'z: ...", "chap ko'z: ...", "..."],
+  "recommendations": [{{"text": "...", "priority": "muhim"}}],
+  "summary": "ota-ona uchun 2 jumla: nima ko'rindi va hozir nima qilish kerak"
 }}
 
-SINFLAR:
-- "normal": ko'rinadigan patologik belgilar yo'q
-- "attention": engil belgilar (biroz qizillik, quruqlik, charchash, engil shish, biroz yoshlanish, qovoq taranglanishi)
-- "consult": yaqqol belgilar (kuchli qizillik, shish, ajralma, qovoq osib tushishi/ptoz, ko'z tartibsizligi/strabizm shubhasi, loyqa qorachiq, shikast)
-
-QOIDALAR:
-- Matnda "skrining", "dastlabki", "tashxis" so'zlarini ishlatmang; "tahlil", "baholash", "kuzatilmoqda" kabi neytral iboralar ishlating
-- "observations": faqat ko'rinadigan belgilarni yozing, max 5 ta, o'zbek tilida
-- "recommendations": 3-5 ta amaliy tavsiya, o'zbek tilida, ekran vaqti, 20-20-20 qoidasi, yorug'lik, dam olish, gigiena, shifokorga murojaat
-- "summary": ota-onalar tushuna oladigan oddiy til, o'zbek tilida
-- Ehtiyotkorlik bilan, "belgilar kuzatilmoqda" kabi iboralar ishlating
-- Noaniq holatlarda yuqori sinf (consult) tanlang
-
-FAQAT JSON qaytaring, boshqa matn yo'q.
+USLUB:
+- "skrining", "dastlabki", "tashxis" so'zlarini ishlatmang; "kuzatilmoqda", "belgilar ko'rinmoqda" kabi neytral iboralar ishlating.
+- "observations": faqat ko'rinadigan belgilar, eng ko'pi 5 ta; normal holatda ham nima tekshirilganini qisqa yozing.
+- Ota-onani qo'rqitmang, lekin xavfli belgini yashirmang.
 """
 
 
 def _get_age_info(age):
     """Build age context string for the prompt."""
     if age:
-        return f"Bolaning yoshi: {age} yosh."
-    return ""
+        return f"Bolaning yoshi: {age} yosh. Tavsiyalarni shu yoshga moslang."
+    return "Bolaning yoshi ko'rsatilmagan."
+
+
+def _normalize_recommendations(items) -> list:
+    """Coerce recommendations to [{text, priority}] sorted by priority."""
+    normalized = []
+    for item in items or []:
+        if isinstance(item, dict):
+            text = str(item.get("text", "")).strip()
+            priority = str(item.get("priority", "tavsiya")).strip().lower().replace("'", "")
+        else:
+            text = str(item).strip()
+            priority = "tavsiya"
+        if not text:
+            continue
+        if priority not in RECOMMENDATION_PRIORITIES:
+            priority = "tavsiya"
+        normalized.append({"text": text, "priority": priority})
+    normalized.sort(key=lambda r: RECOMMENDATION_PRIORITIES.index(r["priority"]))
+    return normalized[:6]
+
+
+def _normalize_result(result: dict) -> dict:
+    """Make class, urgency, confidence and lists consistent (safety first)."""
+    if "valid" not in result:
+        result["valid"] = True
+    if not result.get("valid"):
+        return result
+
+    result_class = result.get("class")
+    if result_class not in CLASS_MIN_URGENCY:
+        result_class = "attention"
+
+    urgency = str(result.get("urgency", "")).strip().lower().replace("'", "")
+    if urgency not in URGENCY_LEVELS:
+        urgency = CLASS_MIN_URGENCY[result_class]
+    # Never below the class minimum; a higher urgency raises the class
+    min_urgency = CLASS_MIN_URGENCY[result_class]
+    if URGENCY_LEVELS[urgency] < URGENCY_LEVELS[min_urgency]:
+        urgency = min_urgency
+    result_class = URGENCY_TO_CLASS[urgency]
+
+    result["class"] = result_class
+    result["urgency"] = urgency
+    result["urgency_level"] = URGENCY_LEVELS[urgency]
+    result["doctor_visit"] = str(result.get("doctor_visit") or DEFAULT_DOCTOR_VISIT[urgency]).strip()
+    result["urgency_reason"] = str(result.get("urgency_reason") or "").strip()
+
+    try:
+        confidence = float(result.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        confidence = 0.0
+    if confidence > 1.0:
+        confidence /= 100.0
+    result["confidence"] = max(0.0, min(confidence, 1.0))
+
+    result["observations"] = [str(o).strip() for o in result.get("observations") or [] if str(o).strip()][:5]
+    result["recommendations"] = _normalize_recommendations(result.get("recommendations"))
+    return result
 
 
 def _parse_response(text: str) -> dict:
@@ -80,6 +191,26 @@ def _parse_response(text: str) -> dict:
         lines = [l for l in lines if not l.startswith("```")]
         text = "\n".join(lines).strip()
     return json.loads(text)
+
+
+def _describe_api_error(exc: Exception):
+    """Return (retryable, user_message) for a Gemini API exception."""
+    code = getattr(exc, "code", None)
+    text = str(exc).lower()
+    if code == 403 and ("billing" in text or "outstanding" in text):
+        return False, (
+            "AI xizmati vaqtincha ishlamayapti: Google Cloud hisobida to'lov muammosi bor. "
+            "Administrator billing hisobini tekshirishi kerak."
+        )
+    if code in (401, 403) or "api key" in text or "api_key" in text:
+        return False, "AI xizmatiga kirish rad etildi: API kalit noto'g'ri yoki ruxsat yo'q. Administratorga murojaat qiling."
+    if code == 404:
+        return False, "AI modeli topilmadi. Administrator GEMINI_MODEL sozlamasini tekshirishi kerak."
+    if code == 400:
+        return False, "AI xizmati so'rovni qabul qilmadi. Boshqa rasm bilan qayta urinib ko'ring."
+    if code == 429:
+        return True, "AI xizmati hozir band yoki limit tugagan. Birozdan so'ng qayta urinib ko'ring."
+    return True, "AI tahlili amalga oshmadi. Internet ulanishini tekshiring va qayta urinib ko'ring."
 
 
 def analyze_eye_image(image_bytes: bytes, mime_type: str, age: int = None) -> dict:
@@ -127,7 +258,7 @@ def analyze_eye_image(image_bytes: bytes, mime_type: str, age: int = None) -> di
                 ],
                 config=genai_types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
-                    temperature=0.2,
+                    temperature=0.1,
                     response_mime_type="application/json",
                 ),
             )
@@ -136,16 +267,13 @@ def analyze_eye_image(image_bytes: bytes, mime_type: str, age: int = None) -> di
             result = _parse_response(raw_text)
             result["raw_text"] = raw_text
 
-            # Validate required fields
-            if "valid" not in result:
-                result["valid"] = True
-            if result.get("valid") and "class" not in result:
-                result["class"] = "attention"
+            result = _normalize_result(result)
 
             logger.info(
-                "Gemini tahlil tugadi: valid=%s, class=%s, confidence=%s",
+                "Gemini tahlil tugadi: valid=%s, class=%s, urgency=%s, confidence=%s",
                 result.get("valid"),
                 result.get("class"),
+                result.get("urgency"),
                 result.get("confidence"),
             )
             return result
@@ -158,16 +286,19 @@ def analyze_eye_image(image_bytes: bytes, mime_type: str, age: int = None) -> di
 
         except Exception as exc:  # noqa: BLE001
             last_error = exc
+            retryable, error_message = _describe_api_error(exc)
             logger.warning("Gemini API xatosi (urinish %d): %s", attempt, exc)
+            if not retryable:
+                break
             if attempt < max_attempts:
                 time.sleep(2.0 * attempt)
 
     logger.error("Gemini tahlili muvaffaqiyatsiz tugadi. Oxirgi xato: %s", last_error)
+    if isinstance(last_error, json.JSONDecodeError):
+        error_message = "AI javobini o'qib bo'lmadi. Qayta urinib ko'ring."
     return {
         "valid": False,
         "error": True,
-        "error_message": (
-            "AI tahlili amalga oshmadi. Internet ulanishini tekshiring va qayta urinib ko'ring. "
-            f"Texnik ma'lumot: {str(last_error)[:100]}"
-        ),
+        "error_message": error_message,
+        "technical_detail": str(last_error)[:300],
     }

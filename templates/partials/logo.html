@@ -1,0 +1,9 @@
+{% load static %}{% comment %}Brand lockup. Optional: size (mark px, default 40), tagline (bool){% endcomment %}
+<span class="inline-flex items-center gap-2.5">
+  <img src="{% static 'img/logo-mark.svg' %}" alt="" width="{{ size|default:40 }}" height="{{ size|default:40 }}"
+    class="flex-shrink-0 drop-shadow-[0_6px_10px_rgba(4,138,104,0.25)]" style="width: {{ size|default:40 }}px; height: auto;" />
+  <span class="flex flex-col">
+    <span class="text-[1.35rem] font-extrabold tracking-tight leading-none"><span class="text-[#0b1220]">Opti</span><span class="text-[#048a68]">Care</span></span>
+    {% if tagline %}<span class="text-[0.72rem] font-semibold text-slate-500 mt-1 leading-none">Bolalar ko'z salomatligi</span>{% endif %}
+  </span>
+</span>

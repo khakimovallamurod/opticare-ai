@@ -34,23 +34,37 @@ MINIMAL_JPEG = bytes([
 # ────────────────────────────────────────────────────────────────────────────────
 # Auth tests
 # ────────────────────────────────────────────────────────────────────────────────
-class DemoLoginTests(TestCase):
+class LoginTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
-            username="demo", first_name="Ibodat", last_name="Musurmonova"
+            username="admin2026", password="123456", first_name="Ibodat", last_name="Musurmonova"
         )
 
-    def test_demo_login_success(self):
-        """POST to demo_login should log in and redirect to dashboard."""
-        response = self.client.post(reverse("demo_login"), follow=True)
-        self.assertTrue(response.context["user"].is_authenticated)
-        self.assertEqual(response.context["user"].username, "demo")
+    def test_login_page_renders(self):
+        """GET login page should render the form."""
+        response = self.client.get(reverse("login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="username"')
 
-    def test_demo_login_get_redirects(self):
-        """GET to demo_login should redirect to landing."""
-        response = self.client.get(reverse("demo_login"))
-        self.assertRedirects(response, reverse("landing"), fetch_redirect_response=False)
+    def test_login_success(self):
+        """Valid credentials should log in and redirect to dashboard."""
+        response = self.client.post(
+            reverse("login"), {"username": "admin2026", "password": "123456"}, follow=True
+        )
+        self.assertTrue(response.context["user"].is_authenticated)
+        self.assertEqual(response.context["user"].username, "admin2026")
+
+    def test_login_wrong_password(self):
+        """Wrong password should stay on the login page unauthenticated."""
+        response = self.client.post(reverse("login"), {"username": "admin2026", "password": "wrong"})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["user"].is_authenticated)
+
+    def test_protected_page_redirects_to_login(self):
+        """Anonymous access to dashboard should redirect to the login page."""
+        response = self.client.get(reverse("dashboard"))
+        self.assertTrue(response.url.startswith(reverse("login")))
 
     def test_landing_redirects_logged_in_user(self):
         """Authenticated user visiting landing should be sent to dashboard."""
@@ -214,7 +228,8 @@ class SeedDemoCommandTests(TestCase):
         from django.core.management import call_command
         call_command("seed_demo", verbosity=0)
 
-        user = User.objects.get(username="demo")
+        user = User.objects.get(username="admin2026")
+        self.assertTrue(user.check_password("123456"))
         self.assertEqual(user.first_name, "Ibodat")
         self.assertEqual(user.last_name, "Musurmonova")
 
@@ -227,7 +242,7 @@ class SeedDemoCommandTests(TestCase):
         call_command("seed_demo", verbosity=0)
         call_command("seed_demo", verbosity=0)
 
-        user_count = User.objects.filter(username="demo").count()
+        user_count = User.objects.filter(username="admin2026").count()
         self.assertEqual(user_count, 1)
 
 
@@ -259,3 +274,79 @@ class ScanModelAndImageUtilsTests(TestCase):
         from scans.services.image_utils import process_image
         with self.assertRaises(ValueError):
             process_image(MINIMAL_JPEG, "eye.exe")
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Gemini result normalization (no API calls)
+# ────────────────────────────────────────────────────────────────────────────────
+class GeminiNormalizationTests(TestCase):
+    def test_prompt_template_formats(self):
+        """Prompt template must format without brace errors."""
+        from scans.services.gemini import ANALYSIS_PROMPT_TEMPLATE, _get_age_info
+        prompt = ANALYSIS_PROMPT_TEMPLATE.format(age_info=_get_age_info(7))
+        self.assertIn('"urgency"', prompt)
+        self.assertIn("7 yosh", prompt)
+
+    def test_urgency_defaults_from_class(self):
+        """Missing urgency falls back to the class minimum with a doctor visit hint."""
+        from scans.services.gemini import _normalize_result
+        result = _normalize_result({"valid": True, "class": "attention", "confidence": 0.8})
+        self.assertEqual(result["urgency"], "orta")
+        self.assertEqual(result["urgency_level"], 2)
+        self.assertTrue(result["doctor_visit"])
+
+    def test_urgency_never_below_class(self):
+        """A consult class with low urgency is raised to at least 'yuqori'."""
+        from scans.services.gemini import _normalize_result
+        result = _normalize_result({"valid": True, "class": "consult", "urgency": "past"})
+        self.assertEqual(result["urgency"], "yuqori")
+        self.assertEqual(result["class"], "consult")
+
+    def test_higher_urgency_raises_class(self):
+        """An urgent level with a normal class is raised to consult (safety first)."""
+        from scans.services.gemini import _normalize_result
+        result = _normalize_result({"valid": True, "class": "normal", "urgency": "shoshilinch"})
+        self.assertEqual(result["class"], "consult")
+        self.assertEqual(result["urgency_level"], 4)
+
+    def test_recommendations_normalized_and_sorted(self):
+        """Recommendations become {text, priority} dicts ordered by priority."""
+        from scans.services.gemini import _normalize_result
+        result = _normalize_result({
+            "valid": True, "class": "attention", "confidence": 92,
+            "recommendations": [
+                {"text": "Ekran vaqtini cheklang", "priority": "qoshimcha"},
+                "Ko'zni ishqalamang",
+                {"text": "1-2 hafta ichida shifokorga boring", "priority": "muhim"},
+                {"text": "", "priority": "muhim"},
+            ],
+        })
+        priorities = [r["priority"] for r in result["recommendations"]]
+        self.assertEqual(priorities, ["muhim", "tavsiya", "qoshimcha"])
+        self.assertAlmostEqual(result["confidence"], 0.92)
+
+    def test_scan_urgency_property_legacy(self):
+        """Old scans without urgency in raw_response derive it from the class."""
+        user = User.objects.create_user(username="legacy_user")
+        scan = Scan(user=user, result_class=Scan.CLASS_CONSULT, raw_response={},
+                    recommendations=["Shifokorga boring"])
+        self.assertEqual(scan.urgency["key"], "yuqori")
+        self.assertEqual(scan.recommendation_items[0]["text"], "Shifokorga boring")
+
+
+class GeminiErrorMessageTests(TestCase):
+    @patch("scans.services.gemini.genai_types")
+    @patch("scans.services.gemini.genai")
+    def test_billing_error_not_retried(self, mock_genai, mock_types):
+        """A 403 billing error is reported clearly and not retried."""
+        exc = Exception("403 PERMISSION_DENIED. Your billing account has an outstanding balance")
+        exc.code = 403
+        mock_client = MagicMock()
+        mock_genai.Client.return_value = mock_client
+        mock_client.models.generate_content.side_effect = exc
+
+        with self.settings(GEMINI_API_KEY="fake-key"):
+            result = analyze_eye_image(MINIMAL_JPEG, "image/jpeg")
+        self.assertTrue(result.get("error"))
+        self.assertIn("to'lov", result["error_message"])
+        self.assertEqual(mock_client.models.generate_content.call_count, 1)

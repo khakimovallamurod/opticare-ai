@@ -1,5 +1,5 @@
-from django.contrib.auth.models import User
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.views.generic import TemplateView
@@ -16,25 +16,17 @@ class LandingView(View):
         return TemplateView.as_view(template_name="accounts/landing.html")(request)
 
 
-class DemoLoginView(View):
-    """Auto-login as the demo user (POST only, CSRF protected)."""
+class LoginView(auth_views.LoginView):
+    """Username/password login page."""
 
-    def post(self, request):
-        try:
-            demo_user = User.objects.get(username="demo")
-        except User.DoesNotExist:
-            messages.error(
-                request,
-                "Demo foydalanuvchi topilmadi. Iltimos, 'python manage.py seed_demo' buyrug'ini ishga tushiring.",
-            )
-            return redirect("landing")
+    template_name = "accounts/login.html"
+    redirect_authenticated_user = True
 
-        login(request, demo_user, backend="django.contrib.auth.backends.ModelBackend")
-        messages.success(request, f"Xush kelibsiz, {demo_user.first_name}!")
-        return redirect("dashboard")
-
-    def get(self, request):
-        return redirect("landing")
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = form.get_user()
+        messages.success(self.request, f"Xush kelibsiz, {user.first_name or user.username}!")
+        return response
 
 
 class LogoutView(View):
@@ -55,7 +47,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     """User profile page."""
 
     template_name = "accounts/profile.html"
-    login_url = "/"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

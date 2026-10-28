@@ -4,7 +4,7 @@
 {% block page_title %}Yangi tekshiruv{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8"
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8"
   x-data="scanUploader()"
   x-init="init()">
 
@@ -56,7 +56,7 @@
   </div>
 
   <!-- 2. Instruction card -->
-  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 mb-8 shadow-xs" data-reveal>
+  <div class="oc-card p-6 sm:p-5 mb-8" data-reveal>
     <div class="flex items-center gap-3 mb-4">
       <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-sky-600 flex-shrink-0">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,11 +85,11 @@
   <!-- 3. Step 1: Image source selection -->
   <div x-show="step === 1" class="space-y-8" data-reveal>
 
-    <!-- Two LARGE option cards (min-h-[180px]) -->
+    <!-- Two LARGE option cards (min-h-[150px]) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
       <!-- Camera card -->
-      <div class="bg-white rounded-3xl border-2 border-slate-200 hover:border-emerald-600 active:scale-[0.98] transition-all cursor-pointer p-8 flex flex-col items-center justify-center gap-4 text-center min-h-[180px] shadow-xs"
+      <div class="oc-card hover:border-emerald-600 active:scale-[0.98] transition-all cursor-pointer p-6 flex flex-col items-center justify-center gap-4 text-center min-h-[150px]"
         @click="openCamera()"
         role="button" tabindex="0"
         @keydown.enter="openCamera()"
@@ -109,7 +109,7 @@
       </div>
 
       <!-- Gallery card -->
-      <div class="bg-white rounded-3xl border-2 border-slate-200 hover:border-emerald-600 active:scale-[0.98] transition-all cursor-pointer p-8 flex flex-col items-center justify-center gap-4 text-center min-h-[180px] shadow-xs"
+      <div class="oc-card hover:border-emerald-600 active:scale-[0.98] transition-all cursor-pointer p-6 flex flex-col items-center justify-center gap-4 text-center min-h-[150px]"
         @click="$refs.galleryInput.click()"
         role="button" tabindex="0"
         @keydown.enter="$refs.galleryInput.click()"
@@ -150,7 +150,7 @@
               d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
           </svg>
         </div>
-        <p class="text-xl font-bold text-slate-900">Rasmni bu yerga tashlang yoki tanlang</p>
+        <p class="text-lg font-bold text-slate-900">Rasmni bu yerga tashlang yoki tanlang</p>
         <p class="text-base text-slate-500 mt-1.5">JPG, PNG yoki WEBP formatda</p>
       </div>
     </div>
@@ -166,7 +166,7 @@
         <!-- Sample 1 -->
         <button type="button"
           @click="selectSample('/static/samples/sample_1_normal.jpg')"
-          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-emerald-600 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          class="group text-left p-3 rounded-2xl oc-card hover:border-emerald-600 transition-all flex flex-col gap-2.5">
           <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
             <img src="/static/samples/sample_1_normal.jpg" alt="Sog'lom ko'z" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             <span class="absolute bottom-2 left-2 bg-emerald-600 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Normal</span>
@@ -180,7 +180,7 @@
         <!-- Sample 2 -->
         <button type="button"
           @click="selectSample('/static/samples/sample_2_attention.jpg')"
-          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-amber-500 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          class="group text-left p-3 rounded-2xl oc-card hover:border-amber-500 transition-all flex flex-col gap-2.5">
           <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
             <img src="/static/samples/sample_2_attention.jpg" alt="Kuzatuv talab holat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             <span class="absolute bottom-2 left-2 bg-amber-500 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Kuzatuv</span>
@@ -194,7 +194,7 @@
         <!-- Sample 3 -->
         <button type="button"
           @click="selectSample('/static/samples/sample_3_clinic.jpg')"
-          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-rose-600 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          class="group text-left p-3 rounded-2xl oc-card hover:border-rose-600 transition-all flex flex-col gap-2.5">
           <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
             <img src="/static/samples/sample_3_clinic.jpg" alt="Murojaat talab holat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             <span class="absolute bottom-2 left-2 bg-rose-600 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Murojaat</span>
@@ -208,7 +208,7 @@
         <!-- Sample 4 -->
         <button type="button"
           @click="selectSample('/static/samples/sample_4_portrait.jpg')"
-          class="group text-left p-3 rounded-2xl bg-white border border-slate-200 hover:border-sky-600 hover:shadow-sm transition-all flex flex-col gap-2.5">
+          class="group text-left p-3 rounded-2xl oc-card hover:border-sky-600 transition-all flex flex-col gap-2.5">
           <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
             <img src="/static/samples/sample_4_portrait.jpg" alt="Frontal portret" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             <span class="absolute bottom-2 left-2 bg-sky-600 text-white text-sm font-semibold px-2 py-0.5 rounded-md">Portret</span>
@@ -226,7 +226,7 @@
   <!-- Step 1b: Live camera view (getUserMedia) -->
   <div x-show="step === 'camera'" class="space-y-5" style="display:none">
     <div class="flex items-center justify-between">
-      <h3 class="text-xl font-bold text-slate-900">Kamera ko'rinishi</h3>
+      <h3 class="text-lg font-bold text-slate-900">Kamera ko'rinishi</h3>
       <button @click="closeCamera()" class="text-base font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-slate-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -298,7 +298,7 @@
   <!-- Step 2: Preview state -->
   <div x-show="step === 2" class="space-y-6" style="display:none">
     <div class="flex items-center justify-between">
-      <h3 class="text-xl font-bold text-slate-900">Tanlangan rasm</h3>
+      <h3 class="text-lg font-bold text-slate-900">Tanlangan rasm</h3>
       <button @click="retake()"
         class="flex items-center gap-2 text-base font-semibold text-slate-600 hover:text-slate-900 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,12 +345,12 @@
       <!-- Action buttons -->
       <div class="flex flex-col sm:flex-row items-center gap-4 pt-2">
         <button type="button" @click="retake()"
-          class="w-full sm:w-auto px-6 py-4 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-2xl border border-slate-200 transition-colors text-lg min-h-[56px]">
+          class="w-full sm:w-auto px-5 py-3 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-2xl border border-slate-200 transition-colors text-base min-h-[48px]">
           Qayta tanlash
         </button>
 
         <button type="submit" id="submit-scan-btn" :disabled="submitting"
-          class="w-full flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95 text-lg min-h-[56px]">
+          class="w-full flex-1 flex items-center justify-center gap-3 px-6 py-3 oc-btn-primary disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-sm transition-all hover:-translate-y-0.5 active:scale-95 text-base min-h-[48px]">
           <span x-show="!submitting">
             <svg class="w-6 h-6 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -371,7 +371,7 @@
     class="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6"
     aria-live="assertive" role="status">
     
-    <div class="bg-white border border-slate-200 rounded-3xl p-8 max-w-sm w-full shadow-lg text-center flex flex-col items-center">
+    <div class="oc-card p-6 max-w-sm w-full shadow-lg text-center flex flex-col items-center">
       <!-- Blinking eye icon -->
       <div class="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6 animate-eye-blink text-emerald-600">
         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -383,7 +383,7 @@
       </div>
 
       <!-- Rotating Status text -->
-      <h3 class="text-xl font-bold text-slate-900 mb-2" x-text="loadingTexts[currentLoadingIndex]">
+      <h3 class="text-lg font-bold text-slate-900 mb-2" x-text="loadingTexts[currentLoadingIndex]">
         Rasm tekshirilmoqda...
       </h3>
       <p class="text-base text-slate-500 mb-6">Sun'iy intellekt ko'z holatini baholamoqda</p>

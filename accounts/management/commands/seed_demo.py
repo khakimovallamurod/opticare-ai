@@ -9,6 +9,7 @@ import random
 import io
 from datetime import timedelta
 from django.utils import timezone
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -143,25 +144,28 @@ class Command(BaseCommand):
         from scans.models import Scan
 
         # --- Create or get demo user ---
+        username = settings.DEMO_USERNAME
+        # Carry over the legacy passwordless "demo" account and its scans
+        if not User.objects.filter(username=username).exists():
+            User.objects.filter(username="demo").update(username=username)
+
         user, created = User.objects.get_or_create(
-            username="demo",
+            username=username,
             defaults={
                 "first_name": "Ibodat",
                 "last_name": "Musurmonova",
                 "email": "demo@opticare.uz",
             },
         )
-        if not created and (user.first_name != "Ibodat" or user.last_name != "Musurmonova"):
-            user.first_name = "Ibodat"
-            user.last_name = "Musurmonova"
-            user.save()
+        user.first_name = "Ibodat"
+        user.last_name = "Musurmonova"
+        user.set_password(settings.DEMO_PASSWORD)
+        user.save()
 
         if created:
-            user.set_unusable_password()
-            user.save()
-            self.stdout.write(self.style.SUCCESS("Demo foydalanuvchi yaratildi: demo"))
+            self.stdout.write(self.style.SUCCESS(f"Demo foydalanuvchi yaratildi: {username}"))
         else:
-            self.stdout.write("Demo foydalanuvchi allaqachon mavjud.")
+            self.stdout.write(f"Demo foydalanuvchi yangilandi: {username}")
 
         # --- Seed scans if fewer than 12 ---
         existing = Scan.objects.filter(user=user).count()
