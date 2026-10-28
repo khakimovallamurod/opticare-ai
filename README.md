@@ -57,11 +57,14 @@ cp .env.example .env
 python manage.py migrate
 ```
 
-### 6. Namuna ma'lumotlarni yuklash
+### 6. Demo foydalanuvchini yaratish
 
 ```bash
 python manage.py seed_demo
 ```
+
+Login va parol `.env` dagi `DEMO_USERNAME` / `DEMO_PASSWORD` dan olinadi (standart: `admin2026` / `123456`).
+Tekshiruvlar tarixi bo'sh qoladi. Namuna tekshiruvlar kerak bo'lsa: `python manage.py seed_demo --with-scans`.
 
 ### 7. Serverni ishga tushirish
 

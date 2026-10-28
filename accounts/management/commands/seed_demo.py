@@ -1,6 +1,6 @@
 """
 Management command: seed_demo
-Creates demo user and ~12 realistic past scan records.
+Creates the demo login user. Scan history stays empty unless --with-scans is given.
 Idempotent – safe to run multiple times.
 """
 
@@ -138,7 +138,14 @@ def _minimal_jpeg():
 
 
 class Command(BaseCommand):
-    help = "Create demo user and seed realistic scan records. Idempotent."
+    help = "Create the demo login user (history stays empty). Idempotent."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--with-scans",
+            action="store_true",
+            help="Namuna tekshiruvlarni ham qo'shish (standart holatda tarix bo'sh qoladi).",
+        )
 
     def handle(self, *args, **options):
         from scans.models import Scan
@@ -166,6 +173,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"Demo foydalanuvchi yaratildi: {username}"))
         else:
             self.stdout.write(f"Demo foydalanuvchi yangilandi: {username}")
+
+        if not options["with_scans"]:
+            return
 
         # --- Seed scans if fewer than 12 ---
         existing = Scan.objects.filter(user=user).count()

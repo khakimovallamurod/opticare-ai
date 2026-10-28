@@ -223,10 +223,10 @@ class GeminiServiceTests(TestCase):
 # Seed demo command test
 # ────────────────────────────────────────────────────────────────────────────────
 class SeedDemoCommandTests(TestCase):
-    def test_seed_demo_creates_user_and_scans(self):
-        """seed_demo management command should create demo user and scans."""
+    def test_seed_demo_with_scans(self):
+        """seed_demo --with-scans should create demo user and sample scans."""
         from django.core.management import call_command
-        call_command("seed_demo", verbosity=0)
+        call_command("seed_demo", with_scans=True, verbosity=0)
 
         user = User.objects.get(username="admin2026")
         self.assertTrue(user.check_password("123456"))
@@ -350,3 +350,16 @@ class GeminiErrorMessageTests(TestCase):
         self.assertTrue(result.get("error"))
         self.assertIn("to'lov", result["error_message"])
         self.assertEqual(mock_client.models.generate_content.call_count, 1)
+
+
+class SeedDemoDefaultTests(TestCase):
+    def test_default_creates_login_without_scans(self):
+        """Plain seed_demo creates a working login and leaves history empty."""
+        from django.core.management import call_command
+        User.objects.create_user(username="demo")  # legacy passwordless account
+        call_command("seed_demo", verbosity=0)
+
+        user = User.objects.get(username="admin2026")
+        self.assertTrue(user.check_password("123456"))
+        self.assertEqual(Scan.objects.filter(user=user).count(), 0)
+        self.assertFalse(User.objects.filter(username="demo").exists())

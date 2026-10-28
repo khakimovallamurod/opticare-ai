@@ -3,6 +3,7 @@ Django settings for config project (OptiCare).
 """
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -92,6 +93,15 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Tests write uploads to a throwaway folder so real media stays clean
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    import atexit
+    import shutil
+    import tempfile
+
+    MEDIA_ROOT = Path(tempfile.mkdtemp(prefix="opticare-test-media-"))
+    atexit.register(shutil.rmtree, MEDIA_ROOT, ignore_errors=True)
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
