@@ -54,12 +54,20 @@ Qat'iy qoidalar:
 ANALYSIS_PROMPT_TEMPLATE = """Rasm — bola yuzi yoki ko'z sohasining fotosurati.
 {age_info}
 
-1-QADAM. RASM SIFATINI TEKSHIRING
-Quyidagi holatlarda "valid": false qaytaring va "invalid_reason"da aniq sababni va qanday qayta suratga olishni yozing:
-- rasmda inson yuzi/ko'z umuman yo'q;
-- ko'zlar yumuq, qo'l, soch yoki ko'zoynak yaltirashi bilan to'silgan;
-- rasm juda xira, qorong'i, haddan tashqari yorug' yoki ko'z sohasi juda kichik.
-Rasm sifati past, lekin ko'z sohasi baholashga yetarli bo'lsa — tahlilni davom ettiring, "confidence"ni pasaytiring.
+1-QADAM. RASM YAROQLILIGI — FAQAT JIDDIY HOLATDA RAD ETING
+"valid": false FAQAT quyidagi holatlarda qaytariladi:
+- rasmda inson yuzi yoki ko'z umuman yo'q (masalan, narsa, hayvon, manzara, matn);
+- ikkala ko'z ham to'liq yumuq yoki to'liq to'silgan;
+- rasm shunchalik qorong'i yoki xiraki, ko'z sohasini umuman ajratib bo'lmaydi.
+Bunda "invalid_reason"da sababni va qanday qayta suratga olishni 1–2 jumlada yozing.
+
+Quyidagi holatlarda rad ETMANG — tahlilni davom ettiring:
+- yuz biroz burilgan, faqat bitta ko'z yaxshi ko'rinadi (ko'ringan ko'zni baholang);
+- ko'zoynak, yaltirash yoki soya qisman to'sgan;
+- rasm uzoqdan olingan, o'rtacha xira yoki yorug'lik ideal emas.
+Bunday hollarda ko'ringan qismni baholang, "observations"ning birinchi bandida rasm sifati cheklovini qisqa yozing
+(masalan: "Rasm sifati: yuz burilgan, chap ko'z to'liq ko'rinmaydi"), "confidence"ni 0.4–0.7 oralig'ida pasaytiring
+va tavsiyalarga sifatliroq rasm bilan qayta tekshirishni "tavsiya" darajasida qo'shing.
 
 2-QADAM. HAR BIR KO'ZNI TIZIMLI KO'RIB CHIQING (o'ng va chap ko'z alohida)
 - Ko'z oq qismi (sklera, konyunktiva): qizarish, tomirlar ko'rinishi, sarg'ayish, qon quyilishi.

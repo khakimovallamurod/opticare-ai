@@ -84,11 +84,8 @@ class NewScanView(LoginRequiredMixin, View):
             scan.invalid_reason = result.get("invalid_reason", "Rasm yaroqsiz.")
             scan.raw_response = result
             scan.save(update_fields=["status", "invalid_reason", "raw_response"])
-            messages.warning(
-                request,
-                f"Rasm tahlil uchun yaroqsiz: {scan.invalid_reason} Iltimos, qayta suratga oling.",
-            )
-            return redirect("new_scan")
+            messages.warning(request, "Rasm tahlil uchun yaroqsiz. Sababi natija sahifasida ko'rsatilgan.")
+            return redirect("scan_detail", pk=scan.pk)
 
         # Save analysis results
         scan.status = Scan.STATUS_OK
