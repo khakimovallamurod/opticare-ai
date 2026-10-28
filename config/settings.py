@@ -117,7 +117,10 @@ DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "123456")
 
 # Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+# Lower thinking = faster answers (minimal | low | medium | high)
+GEMINI_THINKING_LEVEL = os.getenv("GEMINI_THINKING_LEVEL", "low")
+GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "25"))
 
 # File upload
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB

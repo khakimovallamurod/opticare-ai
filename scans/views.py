@@ -56,7 +56,8 @@ class NewScanView(LoginRequiredMixin, View):
             child_name=child_name,
             child_age=child_age,
             notes=notes,
-            status=Scan.STATUS_OK,
+            # Stays "error" until analysis succeeds, so an interrupted request never shows as a result
+            status=Scan.STATUS_ERROR,
         )
         scan.image.save("scan.jpg", ContentFile(processed_bytes), save=False)
         scan.save()

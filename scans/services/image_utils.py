@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-MAX_DIMENSION = 1280
+MAX_DIMENSION = 1024
 JPEG_QUALITY = 85
 MAX_FILE_BYTES = 8 * 1024 * 1024  # 8 MB
 
